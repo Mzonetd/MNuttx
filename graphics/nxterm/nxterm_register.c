@@ -63,7 +63,7 @@
 
 FAR struct nxterm_state_s *
   nxterm_register(NXTERM handle, FAR struct nxterm_window_s *wndo,
-                 FAR const struct nxterm_operations_s *ops, int minor)
+                  FAR const struct nxterm_operations_s *ops, int minor)
 {
   FAR struct nxterm_state_s *priv;
   FAR const struct nx_font_s *fontset;
@@ -137,6 +137,10 @@ FAR struct nxterm_state_s *
   /* Set up the text cache */
 
   priv->maxchars  = CONFIG_NXTERM_MXCHARS;
+
+  /* Clear the display */
+
+  nxterm_clear(priv);
 
   /* Set the initial display position */
 

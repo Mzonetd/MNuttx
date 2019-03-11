@@ -394,6 +394,18 @@ Configuration Directories
        If you do this a lot, you will probably want to invest a little time
        to develop a tool to automate these steps.
 
+  knxterm
+  -------
+
+    This is another protected mode build.  This configuration was used to
+    verify that NxTerms can be used in protected mode.  See the knsh
+    configuration notes for instructions on building and loading this
+    configuration.
+
+    This is a very minimal configuration intended only for low level testing.
+    To be useful, the font sizes, windows sizes, and line widths would need
+    to be optimized to make a friendlier display.
+
   nsh
   ---
     Configures the NuttShell (nsh) located at examples/nsh.  The

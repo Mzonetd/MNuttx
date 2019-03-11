@@ -1,4 +1,4 @@
-NuttX TODO List (Last updated February 15, 2019)
+NuttX TODO List (Last updated March 8, 2019)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This file summarizes known NuttX bugs, limitations, inconsistencies with
@@ -14,9 +14,9 @@ nuttx/:
   (1)  Memory Management (mm/)
   (0)  Power Management (drivers/pm)
   (5)  Signals (sched/signal, arch/)
-  (2)  pthreads (sched/pthread)
+  (2)  pthreads (sched/pthread, libs/libc/pthread)
   (0)  Message Queues (sched/mqueue)
- (10)  Kernel/Protected Build
+  (9)  Kernel/Protected Build
   (3)  C++ Support
   (5)  Binary loaders (binfmt/)
  (18)  Network (net/, drivers/net)
@@ -804,8 +804,8 @@ o Signals (sched/signal, arch/)
                complained about it.  Apparently the visibility of the problem is
                very low.
 
-o pthreads (sched/pthreads)
-  ^^^^^^^^^^^^^^^^^^^^^^^^^
+o pthreads (sched/pthreads libs/libc/pthread)
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   Title:       PTHREAD_PRIO_PROTECT
   Description: Extend pthread_mutexattr_setprotocol().  It should support
@@ -938,15 +938,6 @@ o Kernel/Protected Build
   Status:      Open
   Priority:    Medium/High -- the kernel build configuration is not fully fielded
                yet.
-
-  Title:       NxTERM PARTITIONING.
-  Description: NxTerm is implemented (correctly) as a driver that resides
-               in the nuttx/ directory.  However, the user interfaces must be
-               moved into a NuttX library or into apps/.  Currently
-               applications calls to the NxTerm user interfaces are
-               undefined in the Kernel/Protected builds.
-  Status:      Open
-  Priority:    Medium
 
   Title:       C++ CONSTRUCTORS HAVE TOO MANY PRIVILEGES (PROTECTED MODE)
   Description: When a C++ ELF module is loaded, its C++ constructors are called
@@ -2402,11 +2393,10 @@ o Graphics Subsystem (graphics/)
   Priority:    Low
 
   Title:       AUTO-RAISE DISABLED
-  Description: Auto-raise is currently disabled in NX multi-server mode.  The
-               reason is complex:
+  Description: Auto-raise is currently disabled.  The reason is complex:
                - Most touchscreen controls send touch data a high rates
                - In multi-server mode, touch events get queued in a message
-                  queue.
+                 queue.
                - The logic that receives the messages performs the auto-raise.
                  But it can do stupid things after the first auto-raise as
                  it operates on the stale data in the message queue.
