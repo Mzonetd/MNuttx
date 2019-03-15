@@ -1,7 +1,8 @@
 /****************************************************************************
  * include/nuttx/nx/nxbe.h
  *
- *   Copyright (C) 2008-2011, 2013, 2017 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2008-2011, 2013, 2017, 2019 Gregory Nutt. All rights
+ *     reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,13 +63,36 @@
 #endif
 
 /* NXBE Definitions *********************************************************/
-/* Window flags and helper macros */
 
-#define NXBE_WINDOW_BLOCKED  (1 << 0) /* The window is blocked and will not
-                                       * receive further input. */
+/* Window flags and helper macros:
+ *
+ * NXBE_WINDOW_BLOCKED   - Window input is blocked (internal use only)
+ * NXBE_WINDOW_RAMBACKED - Window is backed by a framebuffer
+ */
 
-#define NXBE_ISBLOCKED(wnd)  (((wnd)->flags & NXBE_WINDOW_BLOCKED) != 0)
-#define NXBE_SETBLOCKED(wnd) do { (wnd)->flags |= NXBE_WINDOW_BLOCKED; } while (0)
+#define NXBE_WINDOW_BLOCKED   (1 << 0) /* The window is blocked and will not
+                                        * receive further input. */
+#define NXBE_WINDOW_RAMBACKED (1 << 1) /* Window is backed by a framebuffer */
+
+#ifdef CONFIG_NX_RAMBACKED
+#  define NXBE_WINDOW_USER NXBE_WINDOW_RAMBACKED
+#else
+#  define NXBE_WINDOW_USER 0
+#endif
+
+#define NXBE_ISBLOCKED(wnd) \
+  (((wnd)->flags & NXBE_WINDOW_BLOCKED) != 0)
+#define NXBE_SETBLOCKED(wnd) \
+  do { (wnd)->flags |= NXBE_WINDOW_BLOCKED; } while (0)
+#define NXBE_CLRBLOCKED(wnd) \
+  do { (wnd)->flags &= ~NXBE_WINDOW_BLOCKED; } while (0)
+
+#define NXBE_ISRAMBACKED(wnd) \
+  (((wnd)->flags & NXBE_WINDOW_RAMBACKED) != 0)
+#define NXBE_SETRAMBACKED(wnd) \
+  do { (wnd)->flags |= NXBE_WINDOW_RAMBACKED; } while (0)
+#define NXBE_CLRRAMBACKED(wnd) \
+  do { (wnd)->flags &= ~NXBE_WINDOW_RAMBACKED; } while (0)
 
 /****************************************************************************
  * Public Types
@@ -83,13 +107,13 @@
  */
 
 struct nxbe_state_s;
-struct nxfe_conn_s;
+struct nxmu_conn_s;
 struct nxbe_window_s
 {
   /* State information */
 
   FAR struct nxbe_state_s *be;        /* The back-end state structure */
-  FAR struct nxfe_conn_s *conn;       /* Connection to the window client */
+  FAR struct nxmu_conn_s *conn;       /* Connection to the window client */
   FAR const struct nx_callback_s *cb; /* Event handling callbacks */
 
   /* The following links provide the window's vertical position using a
@@ -108,6 +132,18 @@ struct nxbe_window_s
   /* Window flags (see the NXBE_* bit definitions above) */
 
   uint8_t flags;
+
+#ifdef CONFIG_NX_RAMBACKED
+  /* Per-window framebuffer support */
+
+#ifdef CONFIG_BUILD_KERNEL
+  uint16_t npages;                    /* Number of pages in allocation */
+#endif
+  nxgl_coord_t stride;                /* Width of framebuffer in bytes */
+  FAR nxgl_mxpixel_t *fbmem;          /* Allocated framebuffer in kernel
+                                       * address spaced.  Must be contiguous.
+                                       */
+#endif
 
   /* Client state information this is provide in window callbacks */
 
