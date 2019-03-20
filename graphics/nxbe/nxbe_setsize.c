@@ -89,7 +89,7 @@ static void nxbe_realloc(FAR struct nxbe_window_s *wnd,
   FAR uint8_t *src;
   FAR uint8_t *dest;
   nxgl_coord_t minheight;
-  nxgl_coord_t newidth;
+  nxgl_coord_t newwidth;
   nxgl_coord_t newheight;
   nxgl_coord_t oldheight;
   nxgl_coord_t row;
@@ -114,10 +114,10 @@ static void nxbe_realloc(FAR struct nxbe_window_s *wnd,
     {
       oldheight       = oldbounds->pt2.y - oldbounds->pt1.y + 1;
 
-      newidth         = wnd->bounds.pt2.x - wnd->bounds.pt1.x + 1;
+      newwidth        = wnd->bounds.pt2.x - wnd->bounds.pt1.x + 1;
       newheight       = wnd->bounds.pt2.y - wnd->bounds.pt1.y + 1;
       bpp             = wnd->be->plane[0].pinfo.bpp;
-      newstride       = (bpp * newidth + 7) >> 8;
+      newstride       = (bpp * newwidth + 7) >> 3;
       newfbsize       = newstride * newheight;
 
 #ifdef CONFIG_BUILD_KERNEL
@@ -134,7 +134,9 @@ static void nxbe_realloc(FAR struct nxbe_window_s *wnd,
         {
           /* Fall back to no RAM back up */
 
-          gerr("ERROR: mm_pgalloc() failed\n");
+          gerr("ERROR: mm_pgalloc() failed for fbsize=%lu, npages=%u\n",
+               (unsigned long)newfbsize, npages);
+
           mm_pgfree(wnd->fbmem, wnd->npages);
           wnd->stride = 0;
           wnd->npages = 0;
@@ -150,7 +152,9 @@ static void nxbe_realloc(FAR struct nxbe_window_s *wnd,
         {
           /* Fall back to no RAM back up */
 
-          gerr("ERROR: mm_pgalloc() failed\n");
+          gerr("ERROR: kumm_malloc() failed for fbsize=%lu\n",
+               (unsigned long)newfbsize);
+
           kumm_free(wnd->fbmem);
           wnd->stride = 0;
           wnd->fbmem  = NULL;
@@ -173,7 +177,7 @@ static void nxbe_realloc(FAR struct nxbe_window_s *wnd,
         {
           /* Copy valid row data */
 
-          memcpy(src, dest, minstride);
+          memcpy(dest, src, minstride);
 
           /* Pad any extra pixel data on the right (with zeroes?) */
 

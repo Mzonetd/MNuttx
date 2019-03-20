@@ -97,7 +97,7 @@ static inline void _local_semtake(sem_t *sem)
     {
       /* Take the semaphore (perhaps waiting) */
 
-      ret = nxsem_wait(sem);
+      ret = net_lockedwait(sem);
 
       /* The only case that an error should occur here is if the wait was
        * awakened by a signal.
@@ -184,6 +184,10 @@ static int inline local_stream_connect(FAR struct local_conn_s *client,
 
   DEBUGASSERT(client->lc_outfile.f_inode != NULL);
 
+  /* Set the busy "result" before giving the semaphore. */
+
+  client->u.client.lc_result = -EBUSY;
+
   /* Add ourself to the list of waiting connections and notify the server. */
 
   dq_addlast(&client->lc_node, &server->u.server.lc_waiters);
@@ -199,7 +203,6 @@ static int inline local_stream_connect(FAR struct local_conn_s *client,
 
   /* Wait for the server to accept the connections */
 
-  client->u.client.lc_result = -EBUSY;
   do
     {
       _local_semtake(&client->lc_waitsem);

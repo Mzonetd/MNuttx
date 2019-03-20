@@ -179,37 +179,82 @@ static inline void nxbe_filltrapezoid_pwfb(FAR struct nxbe_window_s *wnd,
                                            FAR const struct nxgl_trapezoid_s *trap,
                                            nxgl_mxpixel_t color[CONFIG_NX_NPLANES])
 {
-  struct nxgl_rect_s newbounds;
-  FAR const void *src[CONFIG_NX_NPLANES] =
-  {
-    (FAR const void *)wnd->fbmem
-  };
-  struct nxgl_point_s origin =
-  {
-    0, 0
-  };
+  FAR const void *src[CONFIG_NX_NPLANES];
+  struct nxgl_trapezoid_s reltrap;
+  struct nxgl_rect_s relbounds;
+  struct nxgl_point_s origin;
+  unsigned int bpp;
+
+  /* Both the rectangle that we receive here are in abolute device
+   * coordinates.  We need to restore both to windows relative coordinates.
+   */
+
+  nxgl_trapoffset(&reltrap, trap,
+                  -wnd->bounds.pt1.x, -wnd->bounds.pt1.y);
+  nxgl_rectoffset(&relbounds, bounds,
+                  -wnd->bounds.pt1.x, -wnd->bounds.pt1.y);
 
   /* Copy the trapezoidal region to the framebuffer (no clipping).
    * REVISIT:  Assumes a single color plane.
    */
 
    DEBUGASSERT(wnd->be->plane[0].pwfb.filltrapezoid != NULL);
-   wnd->be->plane[0].pwfb.filltrapezoid(wnd, trap, bounds, color[0]);
+   wnd->be->plane[0].pwfb.filltrapezoid(wnd, &reltrap, &relbounds,
+                                        color[0]);
 
-  /* Copy the porition of the per-window framebuffer to the device graphics
-   * memory.
+  /* Get the source of address of the trapezoid bounding box in the
+   * framebuffer.
    */
 
-  /* Restore the rectangle origin to (0,0) as required by nxbe_bitmap_dev().
-   * nxbe_bitmap_dev() will offset the bounds yet again.
+  bpp    = wnd->be->plane[0].pinfo.bpp;
+  src[0] = (FAR const void *)
+           ((FAR uint8_t *)wnd->fbmem +
+            relbounds.pt1.y * wnd->stride +
+            ((bpp * relbounds.pt1.x) >> 3));
+
+  /* For resolutions less than 8-bits, the starting pixel will be contained
+   * in the byte pointed to by src[0]but may not be properly aligned for
+   * the transfer.  We fix this by modifying the origin.
    */
 
-  nxgl_rectoffset(&newbounds, bounds,
-                  -wnd->bounds.pt1.x, -wnd->bounds.pt1.y);
+  origin.x = relbounds.pt1.x;
+  origin.y = relbounds.pt1.y;
 
-  /* Then perform the bitmap copy from the pre-window framebuffer */
+  switch (bpp)
+    {
+#ifndef CONFIG_NX_DISABLE_1BPP
+      case 1:  /* 1 bit per pixel */
+        {
+          origin.x &= ~7;
+        }
+        break;
+#endif
 
-  nxbe_bitmap_dev(wnd, &newbounds, src, &origin, wnd->stride);
+#ifndef CONFIG_NX_DISABLE_2BPP
+      case 2:  /* 2 bits per pixel */
+        {
+          origin.x &= ~3;
+        }
+        break;
+#endif
+
+#ifndef CONFIG_NX_DISABLE_4BPP
+      case 4:  /* 4 bits per pixel */
+        {
+          origin.x &= ~1;
+        }
+        break;
+#endif
+
+      default:
+        break;
+    }
+
+/* Copy the portion of the per-window framebuffer in the bounding box
+   * to the device graphics memory.
+   */
+
+  nxbe_bitmap_dev(wnd, &relbounds, src, &origin, wnd->stride);
 }
 #endif
 
@@ -240,31 +285,28 @@ void nxbe_filltrapezoid(FAR struct nxbe_window_s *wnd,
                         nxgl_mxpixel_t color[CONFIG_NX_NPLANES])
 {
   struct nxgl_rect_s remaining;
-  struct nxgl_trapezoid_s offset_trap;
+  struct nxgl_rect_s absclip;
+  struct nxgl_trapezoid_s devtrap;
 
-  DEBUGASSERT(wnd != NULL && trap != NULL);
+  DEBUGASSERT(wnd != NULL && clip != NULL && trap != NULL);
 
   /* Offset the trapezoid by the window origin to position it within
-   * the framebuffer region
+   * the device graphics coordinate system.
    */
 
-  nxgl_trapoffset(&offset_trap, trap, wnd->bounds.pt1.x, wnd->bounds.pt1.y);
+  nxgl_trapoffset(&devtrap, trap, wnd->bounds.pt1.x, wnd->bounds.pt1.y);
 
   /* Create a bounding box that contains the trapezoid */
 
-  remaining.pt1.x = b16toi(ngl_min(offset_trap.top.x1, offset_trap.bot.x1));
-  remaining.pt1.y = offset_trap.top.y;
-  remaining.pt2.x = b16toi(ngl_max(offset_trap.top.x2, offset_trap.bot.x2));
-  remaining.pt2.y = offset_trap.bot.y;
+  remaining.pt1.x = b16toi(ngl_min(devtrap.top.x1, devtrap.bot.x1));
+  remaining.pt1.y = devtrap.top.y;
+  remaining.pt2.x = b16toi(ngl_max(devtrap.top.x2, devtrap.bot.x2));
+  remaining.pt2.y = devtrap.bot.y;
 
   /* Clip to any user specified clipping window */
 
-  if (clip != NULL)
-    {
-      struct nxgl_rect_s tmp;
-      nxgl_rectoffset(&tmp, clip, wnd->bounds.pt1.x, wnd->bounds.pt1.y);
-      nxgl_rectintersect(&remaining, &remaining, &tmp);
-    }
+  nxgl_rectoffset(&absclip, clip, wnd->bounds.pt1.x, wnd->bounds.pt1.y);
+  nxgl_rectintersect(&remaining, &remaining, &absclip);
 
   /* Clip to the limits of the window and of the background screen */
 
@@ -278,14 +320,14 @@ void nxbe_filltrapezoid(FAR struct nxbe_window_s *wnd,
 
       if (NXBE_ISRAMBACKED(wnd))
         {
-          nxbe_filltrapezoid_pwfb(wnd, &remaining, &offset_trap, color);
+          nxbe_filltrapezoid_pwfb(wnd, &remaining, &devtrap, color);
         }
       else
 #endif
         {
           /* Update only the graphics device memory. */
 
-          nxbe_filltrapezoid_dev(wnd, &remaining, &offset_trap, color);
+          nxbe_filltrapezoid_dev(wnd, &remaining, &devtrap, color);
         }
     }
 }

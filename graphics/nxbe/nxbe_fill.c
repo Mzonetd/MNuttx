@@ -150,12 +150,21 @@ static inline void nxbe_fill_pwfb(FAR struct nxbe_window_s *wnd,
                                   FAR const struct nxgl_rect_s *rect,
                                   nxgl_mxpixel_t color[CONFIG_NX_NPLANES])
 {
+  struct nxgl_rect_s relrect;
+
+  DEBUGASSERT(wnd->be->plane[0].pwfb.fillrectangle != NULL);
+
+  /* The rectangle that we receive here is in abolute device coordinates.  We
+   * need to restore this to windows relative coordinates.
+   */
+
+  nxgl_rectoffset(&relrect, rect, -wnd->bounds.pt1.x, -wnd->bounds.pt1.y);
+
   /* Copy the rectangular region to the framebuffer (no clipping).
    * REVISIT:  Assumes a single color plane.
    */
 
-  DEBUGASSERT(wnd->be->plane[0].pwfb.fillrectangle != NULL);
-  wnd->be->plane[0].pwfb.fillrectangle(wnd, rect, color[0]);
+  wnd->be->plane[0].pwfb.fillrectangle(wnd, &relrect, color[0]);
 }
 #endif
 
@@ -216,6 +225,6 @@ void nxbe_fill(FAR struct nxbe_window_s *wnd,
 
       /* Rend the bitmap directly to the graphics device in any case */
 
-       nxbe_fill_dev(wnd, &remaining, color);
+      nxbe_fill_dev(wnd, &remaining, color);
     }
 }

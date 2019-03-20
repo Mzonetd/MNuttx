@@ -98,6 +98,8 @@
 
 #include <arch/arch.h>
 
+#include <nuttx/cache.h>
+
 /****************************************************************************
  * Pre-processor definitions
  ****************************************************************************/
@@ -1320,28 +1322,6 @@ int up_shmdt(uintptr_t vaddr, unsigned int npages);
 /* See prototype in include/nuttx/elf.h */
 
 /****************************************************************************
- * Name: up_coherent_dcache
- *
- * Description:
- *   Ensure that the I and D caches are coherent within specified region
- *   by cleaning the D cache (i.e., flushing the D cache contents to memory
- *   and invalidating the I cache. This is typically used when code has been
- *   written to a memory region, and will be executed.
- *
- * Input Parameters:
- *   addr - virtual start address of region
- *   len  - Size of the address region in bytes
- *
- * Returned Value:
- *   None
- *
- ****************************************************************************/
-
-#ifdef CONFIG_ARCH_HAVE_COHERENT_DCACHE
-void up_coherent_dcache(uintptr_t addr, size_t len);
-#endif
-
-/****************************************************************************
  * Name: up_interrupt_context
  *
  * Description:
@@ -2071,28 +2051,6 @@ void sched_timer_expiration(void);
 
 #if defined(CONFIG_SCHED_TICKLESS) && defined(CONFIG_SCHED_TICKLESS_ALARM)
 void sched_alarm_expiration(FAR const struct timespec *ts);
-#endif
-
-/****************************************************************************
- * Name: sched_process_cpuload
- *
- * Description:
- *   Collect data that can be used for CPU load measurements.
- *
- * Input Parameters:
- *   None
- *
- * Returned Value:
- *   None
- *
- * Assumptions/Limitations:
- *   This function is called from a timer interrupt handler with all
- *   interrupts disabled.
- *
- ****************************************************************************/
-
-#if defined(CONFIG_SCHED_CPULOAD) && defined(CONFIG_SCHED_CPULOAD_EXTCLK)
-void weak_function sched_process_cpuload(void);
 #endif
 
 /****************************************************************************

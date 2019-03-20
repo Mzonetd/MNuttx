@@ -294,21 +294,23 @@ static inline void nxbe_move_pwfb(FAR struct nxbe_window_s *wnd,
                                   FAR const struct nxgl_rect_s *rect,
                                   FAR const struct nxgl_point_s *offset)
 {
+  FAR const void *src[CONFIG_NX_NPLANES];
   struct nxgl_point_s destpos;
-  struct nxgl_rect_s bounds;
-  FAR const void *src[CONFIG_NX_NPLANES] =
-  {
-    (FAR const void *)wnd->fbmem
-  };
-  FAR const struct nxgl_point_s origin =
-  {
-    0, 0
-  };
+  struct nxgl_point_s origin;
+  struct nxgl_rect_s srcrect;
+  struct nxgl_rect_s destrect;
+  unsigned int bpp;
+
+  /* The rectangle that we receive here is in abolute device coordinates.  We
+   * need to restore this to windows relative coordinates.
+   */
+
+  nxgl_rectoffset(&srcrect, rect, -wnd->bounds.pt1.x, -wnd->bounds.pt1.y);
 
   /* Offset is the destination position of the moved rectangle */
 
-  destpos.x = rect->pt1.x + offset->x;
-  destpos.y = rect->pt1.y + offset->y;
+  destpos.x = srcrect.pt1.x + offset->x;
+  destpos.y = srcrect.pt1.y + offset->y;
 
   /* Move the source rectangle to the destination position in the
    * frambebuffer.
@@ -316,22 +318,66 @@ static inline void nxbe_move_pwfb(FAR struct nxbe_window_s *wnd,
    */
 
   DEBUGASSERT(wnd->be->plane[0].pwfb.moverectangle != NULL);
-  wnd->be->plane[0].pwfb.moverectangle(wnd, rect, &destpos);
+  wnd->be->plane[0].pwfb.moverectangle(wnd, &srcrect, &destpos);
 
   /* Construct the destination bounding box in relative window
    * coordinates.  This derives from the source bounding box with
-   * an offset distination and an offset to restore the relative
-   * window position.
+   * an offset distination.
    */
 
-  nxgl_rectoffset(&bounds, rect, offset->x - wnd->bounds.pt1.x,
-                  offset->y - wnd->bounds.pt1.y);
+  nxgl_rectoffset(&destrect, &srcrect, offset->x, offset->y);
 
-  /* Update the physical device by just copying the destination rectangle
-   * to the device graphics memory.
+  /* Get the source of address of the moved rectangle in the framebuffer. */
+
+  bpp    = wnd->be->plane[0].pinfo.bpp;
+  src[0] = (FAR const void *)
+           ((FAR uint8_t *)wnd->fbmem +
+            destrect.pt1.y * wnd->stride +
+            ((bpp * destrect.pt1.x) >> 3));
+
+  /* For resolutions less than 8-bits, the starting pixel will be contained
+   * in the byte pointed to by src[0]but may not be properly aligned for
+   * the transfer.  We fix this by modifying the origin.
    */
 
-  nxbe_bitmap_dev(wnd, &bounds, src, &origin, wnd->stride);
+  origin.x = destrect.pt1.x;
+  origin.y = destrect.pt1.y;
+
+  switch (bpp)
+    {
+#ifndef CONFIG_NX_DISABLE_1BPP
+      case 1:  /* 1 bit per pixel */
+        {
+          origin.x &= ~7;
+        }
+        break;
+#endif
+
+#ifndef CONFIG_NX_DISABLE_2BPP
+      case 2:  /* 2 bits per pixel */
+        {
+          origin.x &= ~3;
+        }
+        break;
+#endif
+
+#ifndef CONFIG_NX_DISABLE_4BPP
+      case 4:  /* 4 bits per pixel */
+        {
+          origin.x &= ~1;
+        }
+        break;
+#endif
+
+      default:
+        break;
+    }
+
+  /* Update the physical device by just copying the rectangle from the
+   * framebuffer to the destination rectangle device graphics memory.
+   */
+
+  nxbe_bitmap_dev(wnd, &destrect, src, &origin, wnd->stride);
 }
 #endif
 

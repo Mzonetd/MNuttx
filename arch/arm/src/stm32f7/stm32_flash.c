@@ -58,9 +58,10 @@
 #include <assert.h>
 #include <errno.h>
 
+#include "barriers.h"
+
 #include "chip/stm32_flash.h"
 #include "up_arch.h"
-#include "cache.h"
 
 /****************************************************************************
  * Pre-processor Definitions

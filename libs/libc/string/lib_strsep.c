@@ -1,8 +1,8 @@
 /****************************************************************************
- * arch/arm/src/armv7-m/up_coherent_dcache.c
+ * libs/libc/string/lib_strsep.c
  *
- *   Copyright (C) 2015 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ *   Copyright (C) 2019 Pinecone Inc. All rights reserved.
+ *   Author: Xiang Xiao <xiaoxiang@pinecon.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,51 +37,46 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
-#include <sys/types.h>
-#include <stdint.h>
-
-#include "cache.h"
-
-#include <nuttx/arch.h>
+#include <string.h>
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_coherent_dcache
+ * Name: strsep
  *
  * Description:
- *   Ensure that the I and D caches are coherent within specified region
- *   by cleaning the D cache (i.e., flushing the D cache contents to memory
- *   and invalidating the I cache. This is typically used when code has been
- *   written to a memory region, and will be executed.
- *
- * Input Parameters:
- *   addr - virtual start address of region
- *   len  - Size of the address region in bytes
+ *    If *strp is NULL, the strsep() function returns NULL and does
+ *    nothing else.  Otherwise, this function finds the first token in the
+ *    string *strp, that is delimited by one of the bytes in the string
+ *    delim.  This token is terminated by overwriting the delimiter with a
+ *    null byte ('\0'), and *strp is updated to point past the token.
+ *    In case no delimiter was found, the token is taken to be the entire
+ *    string *strp, and *strp is made NULL.
  *
  * Returned Value:
- *   None
+ *    The strsep() function returns a pointer to the token, that is, it
+ *    returns the original value of *strp.
  *
  ****************************************************************************/
 
-void up_coherent_dcache(uintptr_t addr, size_t len)
+FAR char *strsep(FAR char **strp, FAR const char *delim)
 {
-  uintptr_t end;
+  FAR char *sbegin = *strp;
+  FAR char *end;
 
-  if (len > 0)
+  if (sbegin == NULL)
     {
-      /* Flush any dirtcy D-Cache lines to memory */
-
-      end = addr + len;
-      arch_clean_dcache(addr, end);
-      UNUSED(end);
-
-      /* Invalidate the entire I-Cache */
-
-      arch_invalidate_icache_all();
+      return NULL;
     }
+
+  end = strpbrk(sbegin, delim);
+  if (end != NULL)
+    {
+      *end++ = '\0';
+    }
+
+  *strp = end;
+  return sbegin;
 }
