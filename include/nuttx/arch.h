@@ -724,7 +724,7 @@ uintptr_t pgalloc(uintptr_t brkaddr, unsigned int npages);
  * Name: up_sched_have_garbage and up_sched_garbage_collection
  *
  * Description:
- *   Some architectures may soft unique memory allocators.  If
+ *   Some architectures may support unique memory allocators.  If
  *   CONFIG_ARCH_HAVE_GARBAGE is defined, those architectures must provide
  *   both up_sched_have_garbage and up_sched_garbage_collection.  These will
  *   be tied into the NuttX memory garbage collection logic.
@@ -1431,10 +1431,10 @@ int up_prioritize_irq(int irq, int priority);
  * specific interval timer implementation:
  *
  * #ifdef CONFIG_SCHED_TICKLESS_ALARM
- *   void sched_alarm_expiration(FAR const struct timespec *ts):  Called
+ *   void nxsched_alarm_expiration(FAR const struct timespec *ts):  Called
  *     by the platform-specific logic when the alarm expires.
  * #else
- *   void sched_timer_expiration(void):  Called by the platform-specific
+ *   void nxsched_timer_expiration(void):  Called by the platform-specific
  *     logic when the interval timer expires.
  * #endif
  *
@@ -1488,7 +1488,7 @@ void up_timer_getmask(FAR uint64_t *mask);
  * Description:
  *   Cancel the alarm and return the time of cancellation of the alarm.
  *   These two steps need to be as nearly atomic as possible.
- *   sched_alarm_expiration() will not be called unless the alarm is
+ *   nxsched_alarm_expiration() will not be called unless the alarm is
  *   restarted with up_alarm_start().
  *
  *   If, as a race condition, the alarm has already expired when this
@@ -1524,14 +1524,14 @@ int up_alarm_cancel(FAR struct timespec *ts);
  * Name: up_alarm_start
  *
  * Description:
- *   Start the alarm.  sched_alarm_expiration() will be called when the
+ *   Start the alarm.  nxsched_alarm_expiration() will be called when the
  *   alarm occurs (unless up_alaram_cancel is called to stop it).
  *
  *   Provided by platform-specific code and called from the RTOS base code.
  *
  * Input Parameters:
  *   ts - The time in the future at the alarm is expected to occur.  When
- *        the alarm occurs the timer logic will call sched_alarm_expiration().
+ *        the alarm occurs the timer logic will call nxsched_alarm_expiration().
  *
  * Returned Value:
  *   Zero (OK) is returned on success; a negated errno value is returned on
@@ -1554,7 +1554,7 @@ int up_alarm_start(FAR const struct timespec *ts);
  * Description:
  *   Cancel the interval timer and return the time remaining on the timer.
  *   These two steps need to be as nearly atomic as possible.
- *   sched_timer_expiration() will not be called unless the timer is
+ *   nxsched_timer_expiration() will not be called unless the timer is
  *   restarted with up_timer_start().
  *
  *   If, as a race condition, the timer has already expired when this
@@ -1592,14 +1592,14 @@ int up_timer_cancel(FAR struct timespec *ts);
  * Name: up_timer_start
  *
  * Description:
- *   Start the interval timer.  sched_timer_expiration() will be called at
+ *   Start the interval timer.  nxsched_timer_expiration() will be called at
  *   the completion of the timeout (unless up_timer_cancel is called to stop
  *   the timing.
  *
  *   Provided by platform-specific code and called from the RTOS base code.
  *
  * Input Parameters:
- *   ts - Provides the time interval until sched_timer_expiration() is
+ *   ts - Provides the time interval until nxsched_timer_expiration() is
  *        called.
  *
  * Returned Value:
@@ -1985,12 +1985,12 @@ void up_mdelay(unsigned int milliseconds);
 void up_udelay(useconds_t microseconds);
 
 /****************************************************************************
- * These are standard interfaces that are exported by the OS for use by the
+ * These are standard interfaces that are exported by the OS for use by thecd .
  * architecture specific logic
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_process_timer
+ * Name: nxsched_process_timer
  *
  * Description:
  *   This function handles system timer events (only when
@@ -2002,11 +2002,11 @@ void up_udelay(useconds_t microseconds);
  ****************************************************************************/
 
 #ifndef CONFIG_SCHED_TICKLESS
-void sched_process_timer(void);
+void nxsched_process_timer(void);
 #endif
 
 /****************************************************************************
- * Name:  sched_timer_expiration
+ * Name:  nxsched_timer_expiration
  *
  * Description:
  *   if CONFIG_SCHED_TICKLESS is defined, then this function is provided by
@@ -2026,11 +2026,11 @@ void sched_process_timer(void);
  ****************************************************************************/
 
 #if defined(CONFIG_SCHED_TICKLESS) && !defined(CONFIG_SCHED_TICKLESS_ALARM)
-void sched_timer_expiration(void);
+void nxsched_timer_expiration(void);
 #endif
 
 /****************************************************************************
- * Name:  sched_alarm_expiration
+ * Name:  nxsched_alarm_expiration
  *
  * Description:
  *   if CONFIG_SCHED_TICKLESS is defined, then this function is provided by
@@ -2050,7 +2050,32 @@ void sched_timer_expiration(void);
  ****************************************************************************/
 
 #if defined(CONFIG_SCHED_TICKLESS) && defined(CONFIG_SCHED_TICKLESS_ALARM)
-void sched_alarm_expiration(FAR const struct timespec *ts);
+void nxsched_alarm_expiration(FAR const struct timespec *ts);
+#endif
+
+/****************************************************************************
+ * Name: nxsched_process_cpuload
+ *
+ * Description:
+ *   Collect data that can be used for CPU load measurements.  When
+ *   CONFIG_SCHED_CPULOAD_EXTCLK is defined, this is an exported interface,
+ *   use the the external clock logic.  Otherwise, it is an OS Internal
+ *   interface.
+ *
+ * Input Parameters:
+ *   None
+ *
+ * Returned Value:
+ *   None
+ *
+ * Assumptions/Limitations:
+ *   This function is called from a timer interrupt handler with all
+ *   interrupts disabled.
+ *
+ ****************************************************************************/
+
+#if defined(CONFIG_SCHED_CPULOAD) && defined(CONFIG_SCHED_CPULOAD_EXTCLK)
+void weak_function nxsched_process_cpuload(void);
 #endif
 
 /****************************************************************************

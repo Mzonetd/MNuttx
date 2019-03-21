@@ -1,7 +1,7 @@
 /****************************************************************************
- *  arch/avr/src/common/up_idle.c
+ * arch/arm/src/stm32/stm32_dfumode.h
  *
- *   Copyright (C) 2010 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2019 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,55 +33,31 @@
  *
  ****************************************************************************/
 
+#ifndef __ARCH_ARM_SRC_STM32_DFUMODE_H
+#define __ARCH_ARM_SRC_STM32_DFUMODE_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
-#include <nuttx/arch.h>
-#include "up_internal.h"
+#include <nuttx/compiler.h>
 
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Function Prototypes
  ****************************************************************************/
 
 /****************************************************************************
- * Private Data
- ****************************************************************************/
-
-/****************************************************************************
- * Private Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: up_idle
+ * Name:  stm32_dfumode
  *
  * Description:
- *   up_idle() is the logic that will be executed when their
- *   is no other ready-to-run task.  This is processor idle
- *   time and will continue until some interrupt occurs to
- *   cause a context switch from the idle task.
+ *   Reboot the part in DFU mode.
  *
- *   Processing in this state may be processor-specific. e.g.,
- *   this is where power management operations might be
- *   performed.
+ *   https://community.st.com/s/question/0D50X00009XkhAzSAJ/calling-stm32429ieval-bootloader
  *
  ****************************************************************************/
 
-void up_idle(void)
-{
-#if defined(CONFIG_SUPPRESS_INTERRUPTS) || defined(CONFIG_SUPPRESS_TIMER_INTS)
-  /* If the system is idle and there are no timer interrupts,
-   * then process "fake" timer interrupts. Hopefully, something
-   * will wake up.
-   */
-
-  nxsched_process_timer();
+#if defined(CONFIG_STM32_STM32F20XX) || defined(CONFIG_STM32_STM32F4XXX)
+void stm32_dfumode(void) noreturn_function;
 #endif
-}
 
+#endif /* __ARCH_ARM_SRC_STM32_DFUMODE_H */

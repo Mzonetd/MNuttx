@@ -1,8 +1,10 @@
 /****************************************************************************
- *  arch/avr/src/common/up_idle.c
+ * arch/arm/src/stm32/stm32_dfumode.c
  *
- *   Copyright (C) 2010 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ *   Copyright (C) 2019 Bill Gatliff. All rights reserved.
+ *   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+ *   Author: Bill Gatliff <bgat@billgatliff.com>
+ *           Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,49 +41,52 @@
 
 #include <nuttx/config.h>
 
-#include <nuttx/arch.h>
-#include "up_internal.h"
+#include <unistd.h>
+#include <debug.h>
 
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
-
-/****************************************************************************
- * Private Data
- ****************************************************************************/
-
-/****************************************************************************
- * Private Functions
- ****************************************************************************/
+#include "stm32_dfumode.h"
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_idle
+ * Name:  stm32_dfumode
  *
  * Description:
- *   up_idle() is the logic that will be executed when their
- *   is no other ready-to-run task.  This is processor idle
- *   time and will continue until some interrupt occurs to
- *   cause a context switch from the idle task.
+ *   Reboot the part in DFU mode (GCC only).
  *
- *   Processing in this state may be processor-specific. e.g.,
- *   this is where power management operations might be
- *   performed.
+ *   https://community.st.com/s/question/0D50X00009XkhAzSAJ/calling-stm32429ieval-bootloader
+ *
+ *  REVISIT:  STM32_SYSMEM_BASE is not 0x1fff000 for all STM32's.  For F3's
+ *  The SYSMEM base is at 0x1fffd800
+ *
+ *  REVISIT:  RCC_APB2ENR_SYSCFGEN is not bit 14 for all STM32's.  For F3's
+ *  and L15's, it is bit 0.
+ *
+ *  REVISIT:  STM32 F3's do not support the SYSCFG_MEMRMP register.
  *
  ****************************************************************************/
 
-void up_idle(void)
+#if defined(CONFIG_STM32_STM32F20XX) || defined(CONFIG_STM32_STM32F4XXX)
+void stm32_dfumode(void)
 {
-#if defined(CONFIG_SUPPRESS_INTERRUPTS) || defined(CONFIG_SUPPRESS_TIMER_INTS)
-  /* If the system is idle and there are no timer interrupts,
-   * then process "fake" timer interrupts. Hopefully, something
-   * will wake up.
-   */
-
-  nxsched_process_timer();
+#ifdef CONFIG_DEBUG_WARN
+  _warn("Entering DFU mode...\n");
+  sleep(1);
 #endif
-}
 
+  asm("ldr r0, =0x40023844\n\t"    /* RCC_APB2ENR */
+      "ldr r1, =0x00004000\n\t"    /* Enable SYSCFG clock */
+      "str r1, [r0, #0]\n\t"
+      "ldr r0, =0x40013800\n\t"    /* SYSCFG_MEMRMP */
+      "ldr r1, =0x00000001\n\t"    /* Map ROM at zero */
+      "str r1, [r0, #0]\n\t"
+      "ldr r0, =0x1fff0000\n\t"    /* ROM base */
+      "ldr sp,[r0, #0]\n\t"        /* SP @ 0 */
+      "ldr r0,[r0, #4]\n\t"        /* PC @ 4 */
+      "bx r0\n");
+
+  __builtin_unreachable();         /* Tell compiler we will not return */
+}
+#endif /* CONFIG_STM32_STM32F20XX || CONFIG_STM32_STM32F4XXX */
