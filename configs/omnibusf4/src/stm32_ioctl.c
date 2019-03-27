@@ -1,9 +1,10 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_systemreset.c
+ * config/omnibusf4/src/stm32_appinit.c
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2019 Bill Gatliff. All rights reserved.
+ *   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+ *   Author: Bill Gatliff <bgat@billgatliff.com>
  *   Author: Gregory Nutt <gnutt@nuttx.org>
- *           David Sidrane <david_s5@nscdg.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,52 +41,51 @@
 
 #include <nuttx/config.h>
 
+#include <sys/types.h>
 #include <stdint.h>
-#include <assert.h>
+#include <errno.h>
 
-#include <nuttx/arch.h>
 #include <nuttx/board.h>
-#include <arch/samv7/chip.h>
 
-#include "up_arch.h"
-#include "chip/sam_rstc.h"
+#include "omnibusf4.h"
 
-#ifdef CONFIG_SAMV7_SYSTEMRESET
+#ifdef CONFIG_BOARDCTL_IOCTL
 
 /****************************************************************************
- * Public functions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_systemreset
+ * Name: board_ioctl
  *
  * Description:
- *   Internal reset logic.
+ *   The "landing site" for much of the boardctl() interface. Generic board-
+ *   control functions invoked via ioctl() get routed through here.
+ *
+ *   Since we don't do anything unusual at the moment, this function
+ *   accomplishes nothing except avoid a missing-function linker error if
+ *   CONFIG_BOARDCTL_IOCTL is selected.
+ *
+ * Input Parameters:
+ *   cmd - IOCTL command being requested.
+ *   arg - Arguments for the IOCTL.
+ *
+ * Returned Value:
+ *   we don't yet support any boardctl IOCTLs.  This function always returns
+ *  -ENOTTY which is the standard IOCTL return value when a command is not
+ *  supported
  *
  ****************************************************************************/
 
-void up_systemreset(void)
+int board_ioctl(unsigned int cmd, uintptr_t arg)
 {
-  uint32_t rstcr;
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  uint32_t rstmr;
-#endif
+  switch (cmd)
+    {
+      default:
+        return -ENOTTY;
+    }
 
-  rstcr  = (RSTC_CR_PROCRST | RSTC_CR_KEY);
-
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  rstcr |= RSTC_CR_EXTRST;
-
-  rstmr  = getreg32(SAM_RSTC_MR);
-  rstmr &= ~RSTC_MR_ERSTL_MASK;
-  rstmr &= RSTC_MR_ERSTL(CONFIG_SAMV7_EXTRESET_ERST-1) | RSTC_MR_KEY;
-  putreg32(rstmr, SAM_RSTC_MR);
-#endif
-
-  putreg32(rstcr, SAM_RSTC_CR);
-
-  /* Wait for the reset */
-
-  for (; ; );
+  return OK;
 }
-#endif /* CONFIG_SAMV7_SYSTEMRESET */
+
+#endif /* CONFIG_BOARDCTL_IOCTL */

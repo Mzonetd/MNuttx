@@ -45,6 +45,10 @@ ifeq ($(CONFIG_SENSORS_MPU60X0),y)
 CSRCS += stm32_mpu6000.c
 endif
 
+ifeq ($(CONFIG_VIDEO_MAX7456),y)
+CSRCS += stm32_max7456.c
+endif
+
 ifeq ($(CONFIG_SCHED_CRITMONITOR),y)
 CSRCS += stm32_critmon.c
 endif
@@ -63,6 +67,12 @@ endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += stm32_appinit.c
+ifeq ($(CONFIG_BOARDCTL_RESET),y)
+CSRCS += stm32_reset.c
+endif
+ifeq ($(CONFIG_BOARDCTL_IOCTL),y)
+CSRCS += stm32_ioctl.c
+endif
 endif
 
 ifeq ($(CONFIG_ARCH_CUSTOM_PMINIT),y)

@@ -1,9 +1,8 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_systemreset.c
+ * libs/libnx/nxmu/nx_synch.c
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2019 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
- *           David Sidrane <david_s5@nscdg.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,52 +39,82 @@
 
 #include <nuttx/config.h>
 
-#include <stdint.h>
-#include <assert.h>
+#include <errno.h>
+#include <debug.h>
 
-#include <nuttx/arch.h>
-#include <nuttx/board.h>
-#include <arch/samv7/chip.h>
-
-#include "up_arch.h"
-#include "chip/sam_rstc.h"
-
-#ifdef CONFIG_SAMV7_SYSTEMRESET
+#include <nuttx/nx/nx.h>
+#include <nuttx/nx/nxbe.h>
+#include <nuttx/nx/nxmu.h>
 
 /****************************************************************************
- * Public functions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_systemreset
+ * Name: nx_synch
  *
  * Description:
- *   Internal reset logic.
+ *   This interface can be used to syncrhonize the window client with the
+ *   NX server.  It really just implements an 'echo':  A synch message is
+ *   sent from the window client to the server which then responds
+ *   immediately by sending the NXEVENT_SYNCHED back to the windows client.
+ *
+ *   Due to the highly asynchronous nature of client-server communications,
+ *   nx_synch() is sometimes necessary to assure that the client and server
+ *   are fully synchronized in time.
+ *
+ *   Usage by the window client might be something like this:
+ *
+ *     extern bool g_synched;
+ *     extern sem_t g_synch_sem;
+ *
+ *     g_synched = false;
+ *     ret = nx_synch(hwnd, handle);
+ *     if (ret < 0)
+ *       {
+ *          -- Handle the error --
+ *       }
+ *
+ *     while (!g_synched)
+ *       {
+ *         ret = sem_wait(&g_sync_sem);
+ *         if (ret < 0)
+ *           {
+ *              -- Handle the error --
+ *           }
+ *       }
+ *
+ *   When the windwo listener thread receives the NXEVENT_SYNCHED event, it
+ *   would set g_synched to true and post g_synch_sem, waking up the above
+ *   loop.
+ *
+ * Input Parameters:
+ *   wnd - The window to be synched
+ *   arg - An argument that will accompany the block messages (This is arg2
+ *         in the event callback).
+ *
+ * Returned Value:
+ *   OK on success; ERROR on failure with errno set appropriately
  *
  ****************************************************************************/
 
-void up_systemreset(void)
+int nx_synch(NXWINDOW hwnd, FAR void *arg)
 {
-  uint32_t rstcr;
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  uint32_t rstmr;
+  struct nxsvrmsg_synch_s outmsg;
+
+#ifdef CONFIG_DEBUG_FEATURES
+  if (hwnd == NULL)
+    {
+      set_errno(EINVAL);
+      return ERROR;
+    }
 #endif
 
-  rstcr  = (RSTC_CR_PROCRST | RSTC_CR_KEY);
+  /* Send the syncrhonization request message. */
 
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  rstcr |= RSTC_CR_EXTRST;
+  outmsg.msgid = NX_SVRMSG_SYNCH;
+  outmsg.wnd   = (FAR struct nxbe_window_s *)hwnd;
+  outmsg.arg   = arg;
 
-  rstmr  = getreg32(SAM_RSTC_MR);
-  rstmr &= ~RSTC_MR_ERSTL_MASK;
-  rstmr &= RSTC_MR_ERSTL(CONFIG_SAMV7_EXTRESET_ERST-1) | RSTC_MR_KEY;
-  putreg32(rstmr, SAM_RSTC_MR);
-#endif
-
-  putreg32(rstcr, SAM_RSTC_CR);
-
-  /* Wait for the reset */
-
-  for (; ; );
+  return nxmu_sendwindow(hwnd, &outmsg, sizeof(struct nxsvrmsg_synch_s));
 }
-#endif /* CONFIG_SAMV7_SYSTEMRESET */
