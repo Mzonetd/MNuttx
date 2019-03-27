@@ -1,17 +1,3 @@
-                                                                          
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                          
 /************************************************************************/
 /*    File Version : V0.5B                                              */
 /*    History  : 0.5B  (2015-11-20)  [Hardware Manual Revision : 0.5B]  */
@@ -41,6 +27,7 @@
 #else
 #  define RX_SCI7_IRQBASE  RX_SCI0_IRQBASE
 #endif
+
 /* IRQ Stack Frame Format.  The SH-1 has a push down stack.  The PC
  * and SR are pushed by hardware at the time an IRQ is taken.
  */
@@ -89,26 +76,26 @@
 #define RX_TXI2_VNDX      (55) /* 106:      TxI1 */
 #define RX_TEI2_VNDX      (110) /* 107:      TEI1 */
 #ifndef __ASSEMBLY__
-//struct xcptcontext
-//{
+
+struct xcptcontext
+{
+#ifndef CONFIG_DISABLE_SIGNALS
   /* The following function pointer is non-zero if there are pending signals
    * to be processed.
    */
 
-//#ifndef CONFIG_DISABLE_SIGNALS
-  //void *sigdeliver; /* Actual type is sig_deliver_t */
+  void *sigdeliver; /* Actual type is sig_deliver_t */
 
   /* These are saved copies of LR and SR used during signal processing. */
 
-  //uint32_t saved_pc;
-  //uint32_t saved_sr;
-//#endif
+  uint32_t saved_pc;
+  uint32_t saved_sr;
+#endif
 
   /* Register save area */
 
-  //uint32_t regs[XCPTCONTEXT_REGS];
-//};
-#endif
+  uint32_t regs[22];
+};
 
 #ifndef __ASSEMBLY__
 
