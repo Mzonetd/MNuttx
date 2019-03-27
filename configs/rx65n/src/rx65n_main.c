@@ -1,38 +1,4 @@
 /***********************************************************************************************************************
-* DISCLAIMER
-* This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products.
-* No other uses are authorized. This software is owned by Renesas Electronics Corporation and is protected under all
-* applicable laws, including copyright laws. 
-* THIS SOFTWARE IS PROVIDED "AS IS" AND RENESAS MAKES NO WARRANTIES REGARDING THIS SOFTWARE, WHETHER EXPRESS, IMPLIED
-* OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NON-INFRINGEMENT.  ALL SUCH WARRANTIES ARE EXPRESSLY DISCLAIMED.TO THE MAXIMUM EXTENT PERMITTED NOT PROHIBITED BY
-* LAW, NEITHER RENESAS ELECTRONICS CORPORATION NOR ANY OF ITS AFFILIATED COMPANIES SHALL BE LIABLE FOR ANY DIRECT,
-* INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES FOR ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR
-* ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-* Renesas reserves the right, without notice, to make changes to this software and to discontinue the availability 
-* of this software. By using this software, you agree to the additional terms and conditions found by accessing the 
-* following link:
-* http://www.renesas.com/disclaimer
-*
-* Copyright (C) 2015, 2018 Renesas Electronics Corporation. All rights reserved.
-***********************************************************************************************************************/
-
-/***********************************************************************************************************************
-* File Name    : r_cg_main.c
-* Version      : Code Generator for RX65N V1.01.02.03 [08 May 2018]
-* Device(s)    : R5F565N9AxFB
-* Tool-Chain   : GCCRX
-* Description  : This file implements main function.
-* Creation Date: 12/31/2018
-***********************************************************************************************************************/
-
-/***********************************************************************************************************************
-Pragma directive
-***********************************************************************************************************************/
-/* Start user code for pragma. Do not edit comment generated here */
-/* End user code. Do not edit comment generated here */
-
-/***********************************************************************************************************************
 Includes
 ***********************************************************************************************************************/
 #include "rx65n_macrodriver.h"
@@ -41,13 +7,7 @@ Includes
 #include "rx65n_port.h"
 #include "rx65n_cmt.h"
 #include "rx65n_sci.h"
-#include "rx65n_s12ad.h"
-/* Start user code for include. Do not edit comment generated here */
 #include "rx65n_rsk_def.h"
-#include "rx65n_switch.h"
-/* End user code. Do not edit comment generated here */
-#include "rx65n_userdefine.h"
-//void up_putc();
 void board_autoled_on(int led);
 /***********************************************************************************************************************
 Global variables and functions
@@ -55,19 +15,6 @@ Global variables and functions
 /* Start user code for global. Do not edit comment generated here */
 /* Prototype declaration for led_display_count */
 
-/* Variable for flagging user requested ADC conversion */
-volatile uint8_t g_adc_trigger = FALSE;
-/* Prototype declaration for cb_switch_press */
-static void cb_switch_press (void);
-/* Prototype declaration for get_adc */
-static uint16_t get_adc(void);
-/* Prototype declaration for uart_display_adc */
-static void uart_display_adc(const uint8_t adc_count, const uint16_t adc_result);
-/* Variable to store the A/D conversion count for user display */
-static uint8_t adc_count = 0;
-/* Prototype declaration for led_display_count */
-static void led_display_count(const uint8_t count);
-/* End user code. Do not edit comment generated here */
 
 
 static void R_MAIN_UserInit(void);
@@ -109,16 +56,16 @@ void main(void)
     R_MAIN_UserInit();
     /* Start user code. Do not edit comment generated here */
     /* Initialize the switch module */
-    R_SWITCH_Init();
+//    R_SWITCH_Init();
     /* Set the call back function when SW1 or SW2 is pressed */
-    R_SWITCH_SetPressCallback(cb_switch_press);
+//    R_SWITCH_SetPressCallback(cb_switch_press);
     /* Start the A/D converter */
-    R_S12AD0_Start();
+    //R_S12AD0_Start();
     /* Set up SCI2 receive buffer and callback function */
-    R_SCI2_Serial_Receive((uint8_t *)&g_rx_char, 1);
+//    R_SCI2_Serial_Receive((uint8_t *)&g_rx_char, 10);
     /* Enable SCI2 operations */
-    R_SCI2_Start();
-
+//    R_SCI2_Start();
+#if 0
     while (1U)
     {
 
@@ -129,7 +76,7 @@ void main(void)
     	/* Call the function to perform an A/D conversion */
     	adc_result = get_adc();
     	/* Display the result on the LCD */
-#//lcd_display_adc(adc_result);
+//lcd_display_adc(adc_result);
     	/* Increment the adc_count */
     	if (16 == (++adc_count))
     	{
@@ -166,8 +113,10 @@ void main(void)
     	}
     	;
     }
+#endif
     /* End user code. Do not edit comment generated here */
 }
+
 /***********************************************************************************************************************
 * Function Name: R_MAIN_UserInit
 * Description  : This function adds user code before implementing main function.
@@ -187,6 +136,8 @@ void R_MAIN_UserInit(void)
 * Argument : none
 * Return value : none
 ******************************************************************************/
+
+#if 0
 static void cb_switch_press (void)
 {
 /* Check if switch 1 or 2 was pressed */
@@ -197,7 +148,9 @@ if (g_switch_flag & (SWITCHPRESS_1 | SWITCHPRESS_2))
 	/* Clear flag */
 	g_switch_flag = 0x0;
 	}
-	}
+}
+
+#endif
 	/******************************************************************************
 	* End of function cb_switch_press
 	******************************************************************************/
@@ -208,7 +161,8 @@ if (g_switch_flag & (SWITCHPRESS_1 | SWITCHPRESS_2))
 	* Argument : none
 	* Return value : uint16_t adc value
 	******************************************************************************/
-	static uint16_t get_adc (void)
+#if 0
+        static uint16_t get_adc (void)
 	{
 	/* A variable to retrieve the adc result */
 	uint16_t adc_result;
@@ -233,6 +187,7 @@ if (g_switch_flag & (SWITCHPRESS_1 | SWITCHPRESS_2))
 	/******************************************************************************
 	* End of function get_adc
 	******************************************************************************/
+#endif
 
 /******************************************************************************
 * Function Name : led_display_count
@@ -240,6 +195,7 @@ if (g_switch_flag & (SWITCHPRESS_1 | SWITCHPRESS_2))
 * Argument : uint8_t count
 * Return value : none
 ******************************************************************************/
+#if 0
 static void led_display_count (const uint8_t count)
 {
 /* Set LEDs according to lower nibble of count parameter */
@@ -248,6 +204,8 @@ LED1 = (uint8_t)((count & 0x02) ? LED_ON : LED_OFF);
 LED2 = (uint8_t)((count & 0x04) ? LED_ON : LED_OFF);
 LED3 = (uint8_t)((count & 0x08) ? LED_ON : LED_OFF);
 }
+#endif
+
 /******************************************************************************
 * End of function led_display_count
 ******************************************************************************/
@@ -258,6 +216,8 @@ LED3 = (uint8_t)((count & 0x08) ? LED_ON : LED_OFF);
 * uint16_t: adc result
 * Return value : none
 ******************************************************************************/
+
+#if 0
 static void uart_display_adc (const uint8_t adc_count, const uint16_t adc_result)
 {
 /* Declare a temporary variable */
@@ -276,7 +236,10 @@ a = (char)(adc_result & 0x000F);
 uart_buffer[16] = (char)((a < 0x0A) ? (a + 0x30) : (a + 0x37));
 /* Send the string to the UART */
 R_DEBUG_Print(uart_buffer);
+
 }
+
+#endif
 /******************************************************************************
 * End of function uart_display_adc
 ******************************************************************************/

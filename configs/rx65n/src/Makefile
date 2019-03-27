@@ -41,7 +41,7 @@ CFLAGS += -I$(ARCH_SRCDIR)/chip
 
 ASRCS = 
 AOBJS = $(ASRCS:.asm=$(OBJEXT))
-CSRCS =  rx65n_cgc_user.c rx65n_sci_user.c rx65n_cmt_user.c rx65n_icu_user.c rx65n_main.c rx65n_port_user.c rx65n_s12ad_user.c
+CSRCS = rx65n_icu_user.c rx65n_main.c rx65n_cmt_user.c
 COBJS = $(CSRCS:.c=$(OBJEXT))
 
 SRCS = $(ASRCS) $(CSRCS)

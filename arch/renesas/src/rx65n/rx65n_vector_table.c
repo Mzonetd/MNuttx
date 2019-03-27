@@ -1,43 +1,9 @@
 /***********************************************************************************************************************
-* DISCLAIMER
-* This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products.
-* No other uses are authorized. This software is owned by Renesas Electronics Corporation and is protected under all
-* applicable laws, including copyright laws. 
-* THIS SOFTWARE IS PROVIDED "AS IS" AND RENESAS MAKES NO WARRANTIES REGARDING THIS SOFTWARE, WHETHER EXPRESS, IMPLIED
-* OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NON-INFRINGEMENT.  ALL SUCH WARRANTIES ARE EXPRESSLY DISCLAIMED.TO THE MAXIMUM EXTENT PERMITTED NOT PROHIBITED BY
-* LAW, NEITHER RENESAS ELECTRONICS CORPORATION NOR ANY OF ITS AFFILIATED COMPANIES SHALL BE LIABLE FOR ANY DIRECT,
-* INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES FOR ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR
-* ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-* Renesas reserves the right, without notice, to make changes to this software and to discontinue the availability 
-* of this software. By using this software, you agree to the additional terms and conditions found by accessing the 
-* following link:
-* http://www.renesas.com/disclaimer
-*
-* Copyright (C) 2015, 2018 Renesas Electronics Corporation. All rights reserved.
-***********************************************************************************************************************/
-
-/***********************************************************************************************************************
-* File Name    : r_cg_vector_table.c
-* Version      : Code Generator for RX65N V1.01.02.03 [08 May 2018]
-* Device(s)    : R5F565N9AxFB
-* Tool-Chain   : GCCRX
-* Description  : This file implements interrupt vector.
-* Creation Date: 12/31/2018
-***********************************************************************************************************************/
-
-/***********************************************************************************************************************
-Pragma directive
-***********************************************************************************************************************/
-/* Start user code for pragma. Do not edit comment generated here */
-/* End user code. Do not edit comment generated here */
-
-/***********************************************************************************************************************
 Includes
 ***********************************************************************************************************************/
 #include "rx65n_macrodriver.h"
-#include "rx65n_userdefine.h"
-
+//#include "rx65n_userdefine.h"
+#include "stdint.h"
 /***********************************************************************************************************************
 Global variables and functions
 ***********************************************************************************************************************/
@@ -183,7 +149,8 @@ const fp RelocatableVectors[] RVECT_SECT  = {
     /* 0x0070  CMT0 CMI0 */
     (fp)r_cmt_cmi0_interrupt,
     /* 0x0074  CMT1 CMI1 */
-    (fp)r_cmt_cmi1_interrupt,
+    (fp)r_undefined_exception,
+//    (fp)r_cmt_cmi1_interrupt,
     /* 0x0078  CMTW0 CMWI0 */
     (fp)r_undefined_exception,
     /* 0x007C  CMTW1 CMWI1 */
@@ -269,7 +236,8 @@ const fp RelocatableVectors[] RVECT_SECT  = {
     /* 0x011C  ICU IRQ7 */
     (fp)r_undefined_exception,
     /* 0x0120  ICU IRQ8 */
-    (fp)r_icu_irq8_interrupt,
+    (fp)r_undefined_exception,
+//    (fp)r_icu_irq8_interrupt,
     /* 0x0124  ICU IRQ9 */
     (fp)r_icu_irq9_interrupt,
     /* 0x0128  ICU IRQ10 */
@@ -323,7 +291,8 @@ const fp RelocatableVectors[] RVECT_SECT  = {
     /* 0x0188  SCI7 RXI7 */
     (fp)r_undefined_exception,
     /* 0x018C  SCI7 TXI7 */
-    (fp)r_sci7_transmit_interrupt,
+//    (fp)r_sci7_transmit_interrupt,
+    (fp)r_undefined_exception,
     /* 0x0190  SCI8 RXI8 */
     (fp)r_undefined_exception,
     /* 0x0194  SCI8 TXI8 */
@@ -345,7 +314,8 @@ const fp RelocatableVectors[] RVECT_SECT  = {
     /* 0x01B4  RSPI2 SPTI2 */
     (fp)r_undefined_exception,
     /* 0x01B8  ICU GROUP_BL0 */
-    (fp)r_icu_group_bl0_interrupt,
+//    (fp)r_icu_group_bl0_interrupt,
+    (fp)r_undefined_exception,
     /* 0x01BC  ICU GROUP_BL1 */
     (fp)r_icu_group_bl1_interrupt,
     /* 0x01C0  ICU GROUP_AL0 */
@@ -381,9 +351,11 @@ const fp RelocatableVectors[] RVECT_SECT  = {
     /* 0x01FC  EXDMAC EXDMAC1I */
     (fp)r_undefined_exception,
     /* 0x0200  PERIB INTB128 */
-    (fp)r_cmt_cmi2_interrupt,
+    (fp)r_undefined_exception,
+//    (fp)r_cmt_cmi2_interrupt,
     /* 0x0204  PERIB INTB129 */
-    (fp)r_s12ad0_interrupt,
+    (fp)r_undefined_exception,
+//    (fp)r_s12ad0_interrupt,
     /* 0x0208  PERIB INTB130 */
     (fp)r_undefined_exception,
     /* 0x020C  PERIB INTB131 */
@@ -660,15 +632,15 @@ void r_icu_group_bl0_interrupt(void)
 {
     if (ICU.GRPBL0.BIT.IS4 == 1U)
     {
-        r_sci2_transmitend_interrupt();
+       // r_sci2_transmitend_interrupt();
     }
     if (ICU.GRPBL0.BIT.IS5 == 1U)
     {
-        r_sci2_receiveerror_interrupt();
+        //r_sci2_receiveerror_interrupt();
     }
     if (ICU.GRPBL0.BIT.IS14 == 1U)
     {
-        r_sci7_transmitend_interrupt();
+       // r_sci7_transmitend_interrupt();
     }
     /* Start user code. Do not edit comment generated here */
     /* End user code. Do not edit comment generated here */
@@ -846,3 +818,14 @@ void r_floatingpoint_exception(void)
     /* End user code. Do not edit comment generated here */
 }
 
+/*void r_sci2_receive_interrupt(void)
+{
+uint32_t regsa;
+up_doirq(62,regsa);
+}
+
+void r_sci2_transmit_interrupt(void)
+{
+uint32_t regsa;
+up_doirq(63,regsa);
+} */

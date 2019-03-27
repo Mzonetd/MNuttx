@@ -8,14 +8,6 @@ comment "RX65N Configuration Options"
 
 menu "RX65N Peripheral Selections"
 
-config RX65N_HAVE_USBDEV
-	bool
-	default n
-config RX65N_USB
-	bool "USB Device"
-	default n
-	depends on RX65N_HAVE_USBDEV
-	select USBDEV
 config RX65N_SCI2
 	bool "SCI2"
 	default n
