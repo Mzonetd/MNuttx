@@ -663,7 +663,7 @@ static struct stm32_pwmchan_s g_pwm1channels[] =
 #ifdef CONFIG_STM32_TIM1_CHANNEL5
   {
     .channel = 5,
-    .mode    = CONFIG_STM32_TIM1_CH5MODE
+    .mode    = CONFIG_STM32_TIM1_CH5MODE,
 #ifdef CONFIG_STM32_TIM1_CH5OUT
     .out1 =
     {
@@ -678,7 +678,7 @@ static struct stm32_pwmchan_s g_pwm1channels[] =
 #ifdef CONFIG_STM32_TIM1_CHANNEL6
   {
     .channel = 6,
-    .mode    = CONFIG_STM32_TIM1_CH6MODE
+    .mode    = CONFIG_STM32_TIM1_CH6MODE,
 #ifdef CONFIG_STM32_TIM1_CH6OUT
     .out1 =
     {
@@ -1223,7 +1223,7 @@ static struct stm32_pwmchan_s g_pwm8channels[] =
 #ifdef CONFIG_STM32_TIM8_CHANNEL5
   {
     .channel = 5,
-    .mode    = CONFIG_STM32_TIM8_CH5MODE
+    .mode    = CONFIG_STM32_TIM8_CH5MODE,
 #ifdef CONFIG_STM32_TIM8_CH5OUT
     .out1 =
     {
@@ -1238,7 +1238,7 @@ static struct stm32_pwmchan_s g_pwm8channels[] =
 #ifdef CONFIG_STM32_TIM8_CHANNEL6
   {
     .channel = 6,
-    .mode    = CONFIG_STM32_TIM8_CH6MODE
+    .mode    = CONFIG_STM32_TIM8_CH6MODE,
 #ifdef CONFIG_STM32_TIM8_CH6OUT
     .out1 =
     {
@@ -2874,7 +2874,7 @@ static int pwm_output_configure(FAR struct stm32_pwmtimer_s *priv,
 
   /* Configure output polarity (all PWM timers) */
 
-  if (priv->channels[channel-1].out1.pol == STM32_POL_POS)
+  if (priv->channels[channel-1].out1.pol == STM32_POL_NEG)
     {
       ccer |= (GTIM_CCER_CC1P << ((channel-1)*4));
     }
@@ -2912,7 +2912,7 @@ static int pwm_output_configure(FAR struct stm32_pwmtimer_s *priv,
 
       /* Configure complementary output polarity */
 
-      if (priv->channels[channel-1].out2.pol == STM32_POL_POS)
+      if (priv->channels[channel-1].out2.pol == STM32_POL_NEG)
         {
           ccer |= (ATIM_CCER_CC1NP << ((channel-1)*4));
         }

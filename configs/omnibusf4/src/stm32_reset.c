@@ -1,9 +1,10 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_systemreset.c
+ * configs/omnibusf4/src/stm32_reset.c
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2019 Bill Gatliff. All rights reserved.
+ *   Copyright (C) 2011-2012, 2019 Gregory Nutt. All rights reserved.
+ *   Author: Bill Gatliff <bgat@billgatliff.com>
  *   Author: Gregory Nutt <gnutt@nuttx.org>
- *           David Sidrane <david_s5@nscdg.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,52 +41,32 @@
 
 #include <nuttx/config.h>
 
-#include <stdint.h>
-#include <assert.h>
-
 #include <nuttx/arch.h>
 #include <nuttx/board.h>
-#include <arch/samv7/chip.h>
 
-#include "up_arch.h"
-#include "chip/sam_rstc.h"
+#include "stm32_dfumode.h"
 
-#ifdef CONFIG_SAMV7_SYSTEMRESET
+#ifdef CONFIG_BOARDCTL_RESET
 
 /****************************************************************************
- * Public functions
+ * Included Files
  ****************************************************************************/
 
-/****************************************************************************
- * Name: up_systemreset
- *
- * Description:
- *   Internal reset logic.
- *
- ****************************************************************************/
-
-void up_systemreset(void)
+int board_reset(int mode)
 {
-  uint32_t rstcr;
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  uint32_t rstmr;
-#endif
+  if (mode == 0)
+    {
+      /* Normal reset */
 
-  rstcr  = (RSTC_CR_PROCRST | RSTC_CR_KEY);
+      up_systemreset();
+    }
+  else
+    {
+      /* DFU reset */
 
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  rstcr |= RSTC_CR_EXTRST;
-
-  rstmr  = getreg32(SAM_RSTC_MR);
-  rstmr &= ~RSTC_MR_ERSTL_MASK;
-  rstmr &= RSTC_MR_ERSTL(CONFIG_SAMV7_EXTRESET_ERST-1) | RSTC_MR_KEY;
-  putreg32(rstmr, SAM_RSTC_MR);
-#endif
-
-  putreg32(rstcr, SAM_RSTC_CR);
-
-  /* Wait for the reset */
-
-  for (; ; );
+      stm32_dfumode();
+    }
 }
-#endif /* CONFIG_SAMV7_SYSTEMRESET */
+
+#endif /* CONFIG_BOARDCTL_RESET */
+

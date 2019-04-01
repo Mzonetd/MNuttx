@@ -1,9 +1,11 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_systemreset.c
+ * include/nuttx/video/max7456.h
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *           David Sidrane <david_s5@nscdg.com>
+ * Support for the Maxim MAX7456 Single-Channel Monochrome On-Screen
+ * Display with Integrated EEPROM (datasheet 19-0576; Rev 1; 8/08).
+ *
+ *   Copyright (C) 2019 Bill Gatliff. All rights reserved.
+ *   Author: Bill Gatliff <bgat@billgatliff.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +34,10 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- ****************************************************************************/
+ *****************************************************************************/
+
+#ifndef __INCLUDE_NUTTX_VIDEO_MAX7456_H
+#define __INCLUDE_NUTTX_VIDEO_MAX7456_H
 
 /****************************************************************************
  * Included Files
@@ -40,52 +45,37 @@
 
 #include <nuttx/config.h>
 
-#include <stdint.h>
-#include <assert.h>
+/****************************************************************************
+ * Public Data
+ ****************************************************************************/
 
-#include <nuttx/arch.h>
-#include <nuttx/board.h>
-#include <arch/samv7/chip.h>
+struct spi_dev_s;
 
-#include "up_arch.h"
-#include "chip/sam_rstc.h"
-
-#ifdef CONFIG_SAMV7_SYSTEMRESET
+struct mx7_config_s
+{
+  int spi_devid;
+  FAR struct spi_dev_s *spi;
+};
 
 /****************************************************************************
- * Public functions
+ * Public Function Prototypes
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_systemreset
+ * Name: max7456_register
  *
  * Description:
- *   Internal reset logic.
+ *   Registers an max7456 chip, and creates an interface 'devpath'
+ *
+ * Input Parameters:
+ *   path    - The full path to the interface to register. E.g., "/dev/osd0"
+ *   config  - Configuration information
+ *
+ * Returned Value:
+ *   Zero (OK) on success; a negated errno value on failure.
  *
  ****************************************************************************/
 
-void up_systemreset(void)
-{
-  uint32_t rstcr;
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  uint32_t rstmr;
-#endif
+int max7456_register(FAR const char *path, FAR struct mx7_config_s *config);
 
-  rstcr  = (RSTC_CR_PROCRST | RSTC_CR_KEY);
-
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  rstcr |= RSTC_CR_EXTRST;
-
-  rstmr  = getreg32(SAM_RSTC_MR);
-  rstmr &= ~RSTC_MR_ERSTL_MASK;
-  rstmr &= RSTC_MR_ERSTL(CONFIG_SAMV7_EXTRESET_ERST-1) | RSTC_MR_KEY;
-  putreg32(rstmr, SAM_RSTC_MR);
-#endif
-
-  putreg32(rstcr, SAM_RSTC_CR);
-
-  /* Wait for the reset */
-
-  for (; ; );
-}
-#endif /* CONFIG_SAMV7_SYSTEMRESET */
+#endif /*__INCLUDE_NUTTX_VIDEO_MAX7456_H */

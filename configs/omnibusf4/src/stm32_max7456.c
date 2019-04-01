@@ -1,9 +1,10 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_systemreset.c
+ * configs/omnibusf4/src/stm32_max7456.c
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2019 Bill Gatliff. All rights reserved.
+ *   Copyright (C) 2015-2016 Gregory Nutt. All rights reserved.
+ *   Author: Bill Gatliff <bgat@billgatliff.com>
  *   Author: Gregory Nutt <gnutt@nuttx.org>
- *           David Sidrane <david_s5@nscdg.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,51 +42,65 @@
 #include <nuttx/config.h>
 
 #include <stdint.h>
-#include <assert.h>
+#include <debug.h>
 
+#include <nuttx/irq.h>
 #include <nuttx/arch.h>
-#include <nuttx/board.h>
-#include <arch/samv7/chip.h>
+#include <nuttx/spi/spi.h>
 
-#include "up_arch.h"
-#include "chip/sam_rstc.h"
+#include <nuttx/video/max7456.h>
 
-#ifdef CONFIG_SAMV7_SYSTEMRESET
+#include "stm32_gpio.h"
+#include "stm32_spi.h"
+#include "omnibusf4.h"
 
 /****************************************************************************
- * Public functions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_systemreset
+ * Name: stm32_max7456_initialize
  *
  * Description:
- *   Internal reset logic.
+ *
+ *   Initialize and register Omnibus F4's MAX7456 OSD chip. The wiring
+ *   isn't configurable, but we use macros anyway because some of the
+ *   values are referred to in more than one place. And also, because
+ *   that's generally what NuttX does.
+ *
+ *   In particular, the slave-select pin is defined by us, but
+ *   controlled elsewhere as part of the SPI machinery. This is an odd
+ *   thing in our case because nothing else is using the SPI port, but
+ *   that's not the general presentation so I'm staying consistent
+ *   with the pattern.
  *
  ****************************************************************************/
 
-void up_systemreset(void)
+int stm32_max7456_initialize(void)
 {
-  uint32_t rstcr;
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  uint32_t rstmr;
-#endif
+  int port = SPIPORT_MAX7456;
+  int minor = SPIMINOR_MAX7456;
+  int cs = GPIO_CS_MAX7456;
 
-  rstcr  = (RSTC_CR_PROCRST | RSTC_CR_KEY);
+  stm32_configgpio(GPIO_CS_MAX7456);
 
-#if defined(CONFIG_SAMV7_EXTRESET_ERST) && CONFIG_SAMV7_EXTRESET_ERST != 0
-  rstcr |= RSTC_CR_EXTRST;
+  struct mx7_config_s config =
+    {
+     .spi_devid = minor,
+    };
+  UNUSED(cs);
 
-  rstmr  = getreg32(SAM_RSTC_MR);
-  rstmr &= ~RSTC_MR_ERSTL_MASK;
-  rstmr &= RSTC_MR_ERSTL(CONFIG_SAMV7_EXTRESET_ERST-1) | RSTC_MR_KEY;
-  putreg32(rstmr, SAM_RSTC_MR);
-#endif
+  /* Get the spi bus instance. */
 
-  putreg32(rstcr, SAM_RSTC_CR);
+  struct spi_dev_s *spi = stm32_spibus_initialize(port);
+  if (spi == NULL)
+    {
+      return -ENODEV;
+    }
 
-  /* Wait for the reset */
+  config.spi = spi;
 
-  for (; ; );
+  /* Register the chip with the device driver. */
+
+  return max7456_register(DEVNODE_MAX7456, &config);
 }
-#endif /* CONFIG_SAMV7_SYSTEMRESET */
