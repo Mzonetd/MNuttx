@@ -1,8 +1,6 @@
 /************************************************************************************
- * arch/renesas/src/sh1/chip.h
- *
- *   Copyright (C) 2008-2009 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * arch/renesas/src/rx65n/chip.h
+
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

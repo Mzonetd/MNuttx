@@ -8,9 +8,7 @@ comment "RX65N Configuration Options"
 
 menu "RX65N Peripheral Selections"
 
-config RX65N_SCI2
-	bool "SCI2"
-	default n
-	select SCI2_SERIALDRIVER
+
+
 endmenu # RX65N Peripheral Selections
 endif

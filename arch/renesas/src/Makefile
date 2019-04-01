@@ -37,6 +37,9 @@
 -include $(TOPDIR)/Make.defs
 -include chip/Make.defs
 
+ifeq ($(CONFIG_ARCH_RX65N),y)
+ARCH_SUBDIR = rx65n
+endif
 
 CPPFLAGS += $(EXTRADEFINES)
 CFLAGS += $(EXTRADEFINES)
@@ -63,16 +66,17 @@ else
   CFLAGS += -I$(ARCH_SRCDIR)/common
   CFLAGS += -I$(ARCH_SRCDIR)/$(ARCH_SUBDIR)
   CFLAGS += -I$(TOPDIR)/sched
+  CFLAGS += -I$(TOPDIR)/arch/$(CONFIG_ARCH)/include/rx65n/
 endif
 endif
 
 CFLAGS += -I$(ARCH_SRCDIR)/chip -I$(ARCH_SRCDIR)/common -I$(TOPDIR)/sched -I$(ARCH_SRCDIR)/configs/rx65n/src/
 
-HEAD_OBJ = $(HEAD_ASRC:.asm=$(OBJEXT))
+HEAD_OBJ = $(HEAD_ASRC:.S=$(OBJEXT))
 STARTUP_OBJS ?= $(HEAD_OBJ)
 
 ASRCS = $(CHIP_ASRCS) $(CMN_ASRCS)
-AOBJS = $(CHIP_ASRCS:.asm=$(OBJEXT))
+AOBJS = $(CHIP_ASRCS:.S=$(OBJEXT))
 
 CSRCS = $(CHIP_CSRCS) $(CMN_CSRCS)
 COBJS = $(CSRCS:.c=$(OBJEXT))
@@ -126,7 +130,7 @@ all: $(HEAD_OBJ) libarch$(LIBEXT)
 
 .PHONY: board/libboard$(LIBEXT)
 
-$(AOBJS) $(HEAD_OBJ): %$(OBJEXT): %.asm
+$(AOBJS) $(HEAD_OBJ): %$(OBJEXT): %.S
 	$(call ASSEMBLE, $<, $@)
 
 #$(AOBJS): %$(OBJEXT): %.asm
@@ -154,7 +158,7 @@ ifneq ($(CONFIG_WINDOWS_NATIVE),y)
 	sort > $(TOPDIR)/System.map
 endif
 else
-	$(Q) $(LD) --entry=__start $(LDFLAGS) $(LIBPATHS) -o $(TOPDIR)/$@ $(HEAD_OBJ) \
+	$(Q) $(LD) --entry=_PowerON_Reset $(LDFLAGS) $(LIBPATHS) -o $(TOPDIR)/$@ $(HEAD_OBJ) \
 		$(LDSTARTGROUP) $(LDLIBS) $(EXTRA_LIBS) $(LIBGCC) $(LDENDGROUP)
 	@echo "LD: nuttx"
 ifneq ($(CONFIG_WINDOWS_NATIVE),y)

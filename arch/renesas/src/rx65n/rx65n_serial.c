@@ -1,35 +1,7 @@
 /****************************************************************************
- * arch/renesas/src/sh1/RX_serial.c
+ * arch/renesas/src/rx65n/rx65n_serial.c
  *
- *   Copyright (C) 2008-2009, 2012 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ *   
  *
  ****************************************************************************/
 
@@ -47,12 +19,12 @@
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
-
+#include <stdio.h>
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 #include <nuttx/serial/serial.h>
-#include <arch/serial.h>
-
+//#include <arch/serial.h>
+#include "iodefine.h"
 #include "chip.h"
 #include "up_arch.h"
 #include "up_internal.h"
@@ -98,7 +70,7 @@
 #if defined(CONFIG_SCI0_SERIAL_CONSOLE)
 #  define CONSOLE_DEV     g_sci0port     /* SCI0 is console */
 #  define TTYS0_DEV       g_sci0port     /* SCI0 is tty0 */
-#  ifdef CONFIG_SH1_SCI1
+#  ifdef CONFIG_RX65_SCI1
 #    define TTYS1_DEV     g_sci1port     /* SCI1 is tty1 */
 #  else
 #    undef TTYS1_DEV
@@ -196,7 +168,7 @@ static char g_sci2txbuffer[CONFIG_SCI2_TXBUFSIZE];
 #endif
 
 
-/* This describes the state of the SH1 SCI0 port. */
+/* This describes the state of the RX65 SCI0 port. */
 
 #ifdef CONFIG_RX65N_SCI2
 static struct up_dev_s g_sci2priv =
@@ -226,8 +198,7 @@ static uart_dev_t g_sci2port =
 };
 #endif
 
-/* This describes the state of the SH1 SCI1 port. */
-
+/* This describes the state of the RX65 SCI1 port. */
 
 
 /****************************************************************************
@@ -240,6 +211,7 @@ static uart_dev_t g_sci2port =
 
 static inline uint8_t up_serialin(struct up_dev_s *priv, int offset)
 {
+  board_autoled1_on(1);
   return getreg8(priv->scibase + offset);
 }
 
@@ -249,7 +221,7 @@ static inline uint8_t up_serialin(struct up_dev_s *priv, int offset)
 
 static inline void up_serialout(struct up_dev_s *priv, int offset, uint8_t value)
 {
-board_autoled2_off(1);
+//board_autoled2_off(1);
   putreg8(value, priv->scibase + offset);
 }
 
@@ -402,7 +374,7 @@ static int up_setup(struct uart_dev_s *dev)
    * system clock.
    */
 
-  up_setbrr(priv, priv->baud);
+  //up_setbrr(priv, priv->baud);
 
   /* Select the internal clock source as input */
 
@@ -452,6 +424,7 @@ static void up_shutdown(struct uart_dev_s *dev)
 
 static int up_attach(struct uart_dev_s *dev)
 {
+
   struct up_dev_s *priv = (struct up_dev_s*)dev->priv;
   int ret;
 
@@ -460,26 +433,17 @@ static int up_attach(struct uart_dev_s *dev)
   ret = irq_attach(priv->irq + RX_RXI_IRQ_OFFSET, up_interrupt, dev);
   if (ret == OK)
     {
+
       /* The RIE interrupt enable also enables the receive error interrupt (ERI) */
 
       ret = irq_attach(priv->irq + RX_ERI_IRQ_OFFSET, up_interrupt, dev);
       if (ret == OK)
         {
+
           /* Attach the TDR empty IRQ (TXI) enabled by the TIE SCR bit */
 
           ret = irq_attach(priv->irq + RX_TXI_IRQ_OFFSET, up_interrupt, dev);
-          if (ret == OK)
-            {
-#ifdef CONFIG_ARCH_IRQPRIO
-              /* All SCI0 interrupts share the same prioritization */
-
-              up_prioritize_irq(priv->irq, 7);  /* Set SCI priority midway */
-#endif
-              /* Return OK on success */
-
-              return OK;
-            }
-
+        
           /* Detach the ERI interrupt on failure */
 
           (void)irq_detach(priv->irq + RX_ERI_IRQ_OFFSET);
@@ -517,13 +481,6 @@ static void up_detach(struct uart_dev_s *dev)
   (void)irq_detach(priv->irq + RX_ERI_IRQ_OFFSET);
   (void)irq_detach(priv->irq + RX_RXI_IRQ_OFFSET);
 
-#ifdef CONFIG_ARCH_IRQPRIO
-  /* Set the interrupt priority to zero (masking all SCI interrupts).  NOTE
-   * that all SCI0 interrupts share the same prioritization.
-   */
-
-  up_prioritize_irq(priv->irq, 0);
-#endif
 }
 
 /****************************************************************************
@@ -539,8 +496,10 @@ static void up_detach(struct uart_dev_s *dev)
  *
  ****************************************************************************/
 
+
 static int up_interrupt(int irq, void *context, FAR void *arg)
 {
+//board_autoled2_on(1);
   struct uart_dev_s *dev = (struct uart_dev_s *)arg;
   struct up_dev_s *priv;
 
@@ -550,7 +509,7 @@ static int up_interrupt(int irq, void *context, FAR void *arg)
   /* Get the current SCI status  */
 
   priv->ssr = up_serialin(priv, RX_SCI_SSR_OFFSET);
-
+  
   /* Handle receive-related events with RIE is enabled.  RIE is enabled at
    * times that driver is open EXCEPT when the driver is actively copying
    * data from the circular buffer.  In that case, the read events must
@@ -561,15 +520,18 @@ static int up_interrupt(int irq, void *context, FAR void *arg)
     {
       /* Handle incoming, receive bytes (RDRF: Receive Data Register Full) */
 
-      if ((priv->ssr & RX_SCISSR_RDRF) != 0)
-        {
-           /* Rx data register not empty ... process incoming bytes */
 
+
+      //if ((priv->ssr & RX_SCISSR_RDRF) != 0)
+        //{
+           /* Rx data register not empty ... process incoming bytes */
+           
            uart_recvchars(dev);
-        }
+
+        //}
 
       /* Clear all read related events (probably already done in up_receive)) */
-
+     
       priv->ssr &= ~(RX_SCISSR_RDRF|RX_SCISSR_ORER|RX_SCISSR_FER|RX_SCISSR_PER);
     }
 
@@ -591,7 +553,7 @@ static int up_interrupt(int irq, void *context, FAR void *arg)
       priv->ssr &= ~RX_SCISSR_TDRE;
     }
 
-  /* Clear all (clear-able) status flags.  Note that that SH-1 requires
+  /* Clear all (clear-able) status flags.  Note that that RX65-1 requires
    * that you read the bit in the "1" then write "0" to the bit in order
    * to clear it.  Any bits in the SSR that transitioned from 0->1 after
    * we read the SR will not be effected by the following:
@@ -619,6 +581,7 @@ static int up_receive(struct uart_dev_s *dev, unsigned int *status)
 
   /* Read the character from the RDR port */
 
+
   rdr  = up_serialin(priv, RX_SCI_RDR_OFFSET);
 
   /* Clear all read related status in  real ssr (so that when when rxavailable
@@ -627,8 +590,9 @@ static int up_receive(struct uart_dev_s *dev, unsigned int *status)
 
   ssr = up_serialin(priv, RX_SCI_SSR_OFFSET);
   ssr &= ~(RX_SCISSR_RDRF|RX_SCISSR_ORER|RX_SCISSR_FER|RX_SCISSR_PER);
-  up_serialout(priv, RX_SCI_SSR_OFFSET, ssr);
 
+  up_serialout(priv, RX_SCI_SSR_OFFSET, ssr);
+  
   /* For status, return the SSR at the time that the interrupt was received */
 
   *status = (uint32_t)priv->ssr << 8 | rdr;
@@ -648,6 +612,8 @@ static int up_receive(struct uart_dev_s *dev, unsigned int *status)
 
 static void up_rxint(struct uart_dev_s *dev, bool enable)
 {
+
+
 //board_autoled1_on(1);
   struct up_dev_s *priv = (struct up_dev_s*)dev->priv;
   irqstate_t flags;
@@ -661,12 +627,10 @@ static void up_rxint(struct uart_dev_s *dev, bool enable)
   if (enable)
     {
       /* Enable the RDR full interrupt */
-    board_autoled2_on(1);
+    //board_autoled2_on(1);
    
-
-#ifndef CONFIG_SUPPRESS_SERIAL_INTS
       priv->scr |= RX_SCISCR_RIE;
-#endif
+      r_sci2_receive_interrupt();
     }
   else
     {
@@ -678,7 +642,10 @@ static void up_rxint(struct uart_dev_s *dev, bool enable)
   /* Write the modified SCR value to hardware */
 
   up_serialout(priv, RX_SCI_SCR_OFFSET, priv->scr);
+  r_sci2_receive_interrupt();
+
   leave_critical_section(flags);
+
 }
 
 /****************************************************************************
@@ -694,7 +661,8 @@ static bool up_rxavailable(struct uart_dev_s *dev)
   /* Return true if the RDR full bit is set in the SSR */
 
   struct up_dev_s *priv = (struct up_dev_s*)dev->priv;
-  return ((up_serialin(priv, RX_SCI_SSR_OFFSET) & RX_SCISSR_RDRF) != 0);
+  
+  return ((up_serialin(priv, RX_SCI_SSR_OFFSET)) & RX_SCISSR_RDRF) != 0;
 }
 
 /****************************************************************************
@@ -711,7 +679,7 @@ static void up_send(struct uart_dev_s *dev, int ch)
   uint8_t ssr;
 
   /* Write the data to the TDR */
-
+up_udelay(1000);
   up_serialout(priv, RX_SCI_TDR_OFFSET, (uint8_t)ch);
 
   /* Clear the TDRE bit in the SSR */
@@ -719,6 +687,7 @@ static void up_send(struct uart_dev_s *dev, int ch)
   ssr  = up_serialin(priv, RX_SCI_SSR_OFFSET);
   ssr &= ~RX_SCISSR_TDRE;
   up_serialout(priv, RX_SCI_SSR_OFFSET, ssr);
+up_udelay(1000);
 }
 
 /****************************************************************************
@@ -731,10 +700,10 @@ static void up_send(struct uart_dev_s *dev, int ch)
 
 static void up_txint(struct uart_dev_s *dev, bool enable)
 {
-board_autoled1_on(1);
+//board_autoled1_on(1);
   struct up_dev_s *priv = (struct up_dev_s*)dev->priv;
   irqstate_t flags;
-
+  int i;
   /* Disable interrupts to prevent asynchronous accesses */
 
   flags = enter_critical_section();
@@ -743,7 +712,6 @@ board_autoled1_on(1);
 
   if (enable)
     {
-#ifndef CONFIG_SUPPRESS_SERIAL_INTS
       /* Enable the TDR empty interrupt */
 
       priv->scr |= RX_SCISCR_TIE;
@@ -759,10 +727,12 @@ board_autoled1_on(1);
            * return from uuart_xmitchars().
            */
 
+
           uart_xmitchars(dev);
+
         }
 #endif
-#endif
+
     }
   else
     {
@@ -774,6 +744,7 @@ board_autoled1_on(1);
   /* Write the modified SCR value to hardware */
 
   up_serialout(priv, RX_SCI_SCR_OFFSET, priv->scr);
+
   leave_critical_section(flags);
 }
 
@@ -876,7 +847,7 @@ void up_serialinit(void)
 
 int up_putc(int ch)
 {
-up_lowsetup();
+
 #ifdef HAVE_CONSOLE
   struct up_dev_s *priv = (struct up_dev_s*)CONSOLE_DEV.priv;
   uint8_t  scr;
