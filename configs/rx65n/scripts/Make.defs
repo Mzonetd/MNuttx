@@ -57,6 +57,7 @@ ARCHSCRIPT = -T "${shell cygpath -w $(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/scrip
 ARCHPICFLAGS = -fpic
 ARCHCFLAGS = -fno-builtin
 #ARCHCPUFLAGS = -fdata-sections -g2 -mlittle-endian-data
+ARCHCPUFLAGS = -mcpu=rx64m
 ARCHWARNINGS = -Wall -Wstrict-prototypes -Wshadow -Wundef
 ARCHWARNINGSXX = -Wall -Wshadow -Wundef
 else
@@ -67,6 +68,7 @@ ARCHSCRIPT = -T$(TOPDIR)/configs/$(CONFIG_ARCH_BOARD)/scripts/linker_script.ld
 ARCHPICFLAGS = -fpic
 ARCHCFLAGS = -fno-builtin
 #ARCHCPUFLAGS = -fdata-sections -g2 -mlittle-endian-data
+ARCHCPUFLAGS = -mcpu=rx64m
 ARCHWARNINGS = -Wall -Wstrict-prototypes -Wshadow -Wundef
 ARCHWARNINGSXX = -Wall -Wshadow -Wundef
 endif
@@ -106,7 +108,7 @@ endif
 
 CMODULEFLAGS = $(CFLAGS) -mlong-calls # --target1-abs
 
-ASMEXT = .asm
+ASMEXT = .S
 OBJEXT = .o
 LIBEXT = .a
 EXEEXT =
