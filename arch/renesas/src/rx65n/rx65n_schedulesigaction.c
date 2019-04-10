@@ -21,7 +21,7 @@
 #include "sched/sched.h"
 #include "up_internal.h"
 #include "up_arch.h"
-# define RX_PC 8
+
 
 #ifndef CONFIG_DISABLE_SIGNALS
 
@@ -109,14 +109,14 @@ void up_schedule_sigaction(struct tcb_s *tcb, sig_deliver_t sigdeliver)
                */
 
               tcb->xcp.sigdeliver   = sigdeliver;
-              tcb->xcp.saved_pc     = g_current_regs[RX_PC];
+              tcb->xcp.saved_pc     = g_current_regs[REG_PC];
               
 
               /* Then set up to vector to the trampoline with interrupts
                * disabled
                */
 
-              g_current_regs[RX_PC]  = (uint32_t)up_sigdeliver;
+              g_current_regs[REG_PC]  = (uint32_t)up_sigdeliver;
               
 
               /* And make sure that the saved context in the TCB
@@ -141,14 +141,14 @@ void up_schedule_sigaction(struct tcb_s *tcb, sig_deliver_t sigdeliver)
            */
 
           tcb->xcp.sigdeliver    = sigdeliver;
-          tcb->xcp.saved_pc      = tcb->xcp.regs[RX_PC];
+          tcb->xcp.saved_pc      = tcb->xcp.regs[REG_PC];
           
 
           /* Then set up to vector to the trampoline with interrupts
            * disabled
            */
 
-          tcb->xcp.regs[RX_PC]  = (uint32_t)up_sigdeliver;
+          tcb->xcp.regs[REG_PC]  = (uint32_t)up_sigdeliver;
           
         }
     }

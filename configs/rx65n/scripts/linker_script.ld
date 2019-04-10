@@ -30,17 +30,7 @@ SECTIONS
 	.init :
 	{
 		KEEP(*(.init))
-		__preinit_array_start = .;
-		KEEP(*(.preinit_array))
-		__preinit_array_end = .;
-		__init_array_start = (. + 3) & ~ 3;
-		KEEP(*(.init_array))
-		KEEP(*(SORT(.init_array.*)))
-		__init_array_end = .;
-		__fini_array_start = .;
-		KEEP(*(.fini_array))
-		KEEP(*(SORT(.fini_array.*)))
-		__fini_array_end = .;
+		
 	} > ROM
 	.fini :
 	{

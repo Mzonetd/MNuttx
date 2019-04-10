@@ -39,7 +39,7 @@
  ************************************************************************************/
 
 #include <nuttx/config.h>
-#include <stdint.h>
+//#include <stdint.h>
 
 #ifdef CONFIG_ARCH_CHIP_R5F565NEDDFC
 #  include "rx65n_rsk_def.h"
@@ -59,17 +59,7 @@
  ************************************************************************************/
 
 /* Address of the saved user stack pointer */
-extern uint32_t g_bss;         /* Start of near .bss */
-extern uint32_t g_ebss;         /* End+1 of near .bss */
-extern uint32_t g_mdata;        /* Start of near .data */
-extern uint32_t g_data;        /* End+1 of near .data */
-extern uint32_t g_edata;        /* End+1 of near .data */
-extern uint32_t g_idle_topstack;
-#ifndef __ASSEMBLY__
-#  if CONFIG_ARCH_INTERRUPTSTACK > 3
-     extern uint32_t g_intstackbase;
-#  endif
-#endif
+
 
 /************************************************************************************
  * Public Functions

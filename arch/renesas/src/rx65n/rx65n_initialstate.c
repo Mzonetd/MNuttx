@@ -17,8 +17,7 @@
 #include "chip/chip.h"
 #include "up_internal.h"
 #include "up_arch.h"
-# define RX_SP 10
-# define RX_PC 8
+
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -58,6 +57,6 @@ void up_initial_state(struct tcb_s *tcb)
 
   memset(xcp, 0, sizeof(struct xcptcontext));
 
-  xcp->regs[RX_SP] = (uint32_t)tcb->adj_stack_ptr;
-  xcp->regs[RX_PC] = (uint32_t)tcb->start;
+  xcp->regs[REG_SP] = (uint32_t)tcb->adj_stack_ptr;
+  xcp->regs[REG_PC] = (uint32_t)tcb->start;
 }

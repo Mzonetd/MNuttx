@@ -93,9 +93,11 @@ void up_initialize(void)
 
 #if !defined(CONFIG_SUPPRESS_INTERRUPTS) && !defined(CONFIG_SUPPRESS_TIMER_INTS)
   /* Initialize the system timer interrupt */
-
-  //renesas_timer_initialize();
-  R_TMR_Create();
+#ifdef CONFIG_ARCH_CHIP_R5F565NEDDFC
+    R_TMR_Create();
+#else
+  renesas_timer_initialize();
+#endif 
 #endif
 
 #ifdef CONFIG_PM

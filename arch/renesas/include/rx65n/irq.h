@@ -1,11 +1,5 @@
-/************************************************************************/
-/*    File Version : V0.5B                                              */
-/*    History  : 0.5B  (2015-11-20)  [Hardware Manual Revision : 0.5B]  */
-/*    Date Modified: 26/04/2016                                         */
-/************************************************************************/
-
-#ifndef INTERRUPT_HANDLERS_H
-#define INTERRUPT_HANDLERS_H
+#ifndef __ARCH_RENESAS_INCLUDE_RX65N_IRQ_H
+#define __ARCH_RENESAS_INCLUDE_RX65N_IRQ_H
 #define XCPTCONTEXT_REGS    (22)
 #define XCPTCONTEXT_SIZE      22
 #  define NR_IRQS             (16)
@@ -16,74 +10,944 @@
 #define RX_RXI_IRQ_OFFSET (1)                                   /* RxI0 */
 #define RX_TXI_IRQ_OFFSET (2)                                   /* TxI0 */
 #define RX_TEI_IRQ_OFFSET (3)                                   /* TEI0 */
-#define RX_SCI_NIRQS      (4)
-#define RX_SCI2_IRQBASE (0)
-#ifdef CONFIG_RX65N_SCI2                                           /* SCI0 */
-#  define RX_ERI2_IRQ     (RX_SCI2_IRQBASE+RX_ERI_IRQ_OFFSET) /*  ERI0 */
-#  define RX_RXI2_IRQ     (RX_SCI2_IRQBASE+RX_RXI_IRQ_OFFSET) /*  RxI0 */
-#  define RX_TXI2_IRQ     (RX_SCI2_IRQBASE+RX_TXI_IRQ_OFFSET) /*  TxI0 */
-#  define RX_TEI2_IRQ     (RX_SCI2_IRQBASE+RX_TEI_IRQ_OFFSET) /*  TEI0 */
-#  define RX_SCI1_IRQBASE (RX_SCI2_IRQBASE+RX_SCI_NIRQS)
+
+#if 0
+# define RX65N_TRAP_IRQBASE  (0)
+# define RX65N_TRAP0_IRQ     (RX65N_TRAP_IRQBASE)
+# define RX65N_TRAP1_IRQ     (RX65N_TRAP_IRQBASE+1)
+# define RX65N_TRAP2_IRQ     (RX65N_TRAP_IRQBASE+2)
+# define RX65N_TRAP3_IRQ     (RX65N_TRAP_IRQBASE+3)
+# define RX65N_TRAP4_IRQ     (RX65N_TRAP_IRQBASE+4)
+# define RX65N_TRAP5_IRQ     (RX65N_TRAP_IRQBASE+5)
+# define RX65N_TRAP6_IRQ     (RX65N_TRAP_IRQBASE+6)
+# define RX65N_TRAP7_IRQ     (RX65N_TRAP_IRQBASE+7)
+# define RX65N_TRAP8_IRQ     (RX65N_TRAP_IRQBASE+8)
+# define RX65N_TRAP9_IRQ     (RX65N_TRAP_IRQBASE+9)
+# define RX65N_TRAP10_IRQ    (RX65N_TRAP_IRQBASE+10)
+# define RX65N_TRAP11_IRQ    (RX65N_TRAP_IRQBASE+11)
+# define RX65N_TRAP12_IRQ    (RX65N_TRAP_IRQBASE+12)
+# define RX65N_TRAP13_IRQ    (RX65N_TRAP_IRQBASE+13)
+# define RX65N_TRAP14_IRQ    (RX65N_TRAP_IRQBASE+14)
+# define RX65N_TRAP15_IRQ    (RX65N_TRAP_IRQBASE+15)
+# define RX65N_BUSERR_IRQBASE (RX65N_TRAP_IRQBASE+16)
 #else
-#  define RX_SCI7_IRQBASE  RX_SCI0_IRQBASE
+# define RX65N_BUSERR_IRQBASE    0
 #endif
 
+#ifdef CONFIG_BSC
+# define RX65N_BUSERR_IRQ     (RX65N_BUSERR_IRQBASE)
+# define RX65N_RAMERR_IRQBASE (RX65N_BUSERR_IRQBASE+1)
+#else
+# define RX65N_BUSERR_IRQ     0
+# define RX65N_RAMERR_IRQBASE (RX65N_BUSERR_IRQBASE)
+#endif
+
+#ifdef CONFIG_RAM
+# define RX65N_RAMERR_IRQ     (RX65N_RAMERR_IRQBASE)
+# define RX65N_FIFERR_IRQBASE (RX65N_RAMERR_IRQBASE+1)
+#else
+# define RX65N_FIFERR_IRQBASE (RX65N_RAMERR_IRQBASE)
+#endif
+
+#ifdef CONFIG_FRDYI
+# define RX65N_FRDYI_IRQ           (RX65N_FIFERR_IRQBASE)
+# define RX65N_ICU_SWITCH_IRQBASE  (RX65N_FIFERR_IRQBASE+1)
+#else
+# define RX65N_ICU_SWITCH_IRQBASE  (RX65N_FIFERR_IRQBASE)
+#endif
+
+#define RX_SCI_NIRQS      (4)
+#ifdef CONFIG_ARCH_CHIP_R5F565NEDDFC
+
+#ifdef CONFIG_RX65N_ICU_SWITCH
+#  define RX65N_SWINT2_IRQ    (RX65N_ICU_SWITCH_IRQBASE)
+#  define RX65N_SWINT_IRQ     (RX65N_ICU_SWITCH_IRQBASE + 1)
+#  define RX65N_CMT0_IRQBASE  (RX65N_ICU_SWITCH_IRQBASE + 2)
+#else
+#  define RX65N_CMT0_IRQBASE  (RX65N_ICU_SWITCH_IRQBASE)
+#endif
+
+#ifdef CONFIG_RX65N_CMT0
+#  define RX65N_CMI0_IRQ      RX65N_CMT0_IRQBASE
+#  define RX65N_CMT1_IRQBASE  (RX65N_CMT0_IRQBASE + 1)
+#else
+#  define RX65N_CMT1_IRQBASE  RX65N_CMT0_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_CMT1
+#  define RX65N_CMI1_IRQ       RX65N_CMT1_IRQBASE
+#  define RX65N_CMTW0_IRQBASE  (RX65N_CMT1_IRQBASE + 1)
+#else
+#  define RX65N_CMTW0_IRQBASE  RX65N_CMT1_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_CMTW0
+#  define RX65N_CMWI0_IRQ      RX65N_CMTW0_IRQBASE
+#  define RX65N_CMTW1_IRQBASE  (RX65N_CMTW0_IRQBASE + 1)
+#else
+#  define RX65N_CMTW1_IRQBASE  RX65N_CMTW0_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_CMTW1
+#  define RX65N_CMWI1_IRQ       RX65N_CMTW1_IRQBASE
+#  define RX65N_USB0_IRQBASE   (RX65N_CMTW1_IRQBASE + 1)
+#else
+#  define RX65N_USB0_IRQBASE RX65N_CMTW1_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_USB0
+#  define RX65N_D0FIFO0_IRQ    RX65N_USB0_IRQBASE
+#  define RX65N_D1FIFO0_IRQ    (RX65N_USB0_IRQBASE + 1)
+#  define RX65N_RSPI0_IRQBASE  (RX65N_USB0_IRQBASE + 2)
+#else
+#  define RX65N_RSPI0_IRQBASE   RX65N_USB0_IRQBASE
+#endif
+#ifdef CONFIG_RX65N_RSPI0
+#  define RX65N_SPRI0_IRQ      RX65N_RSPI0_IRQBASE
+#  define RX65N_SPTI0_IRQ      (RX65N_RSPI0_IRQBASE + 1)
+#  define RX65N_RSPI1_IRQBASE  (RX65N_RSPI0_IRQBASE + 2)
+#else
+#  define RX65N_RSPI1_IRQBASE   RX65N_RSPI0_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_RSPI1
+#  define RX65N_SPRI1_IRQ       RX65N_RSPI1_IRQBASE
+#  define RX65N_SPTI1_IRQ       (RX65N_RSPI1_IRQBASE + 1)
+#  define RX65N_QSPI_IRQBASE    (RX65N_RSPI1_IRQBASE + 2)
+#else
+#  define RX65N_QSPI_IRQBASE    RX65N_RSPI1_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_QSPI
+#  define RX65N_SPRI_IRQ        RX65N_QSPI_IRQBASE
+#  define RX65N_SPTI_IRQ        (RX65N_QSPI_IRQBASE + 1)
+#  define RX65N_SDHI_IRQBASE    (RX65N_QSPI_IRQBASE + 2)
+#else
+#  define RX65N_SDHI_IRQBASE    RX65N_QSPI_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SDHI
+#  define RX65N_SBFAI_IRQ        RX65N_SDHI_IRQBASE
+#  define RX65N_MMCIF_IRQBASE    (RX65N_SDHI_IRQBASE + 1)
+#else
+#  define RX65N_MMCIF_IRQBASE    RX65N_SDHI_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_MMCIF
+#  define RX65N_MBFAI_IRQ        RX65N_MMCIF_IRQBASE
+#  define RX65N_RIIC1_IRQBASE    (RX65N_MMCIF_IRQBASE + 1)
+#else
+#  define RX65N_RIIC1_IRQBASE    RX65N_MMCIF_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_RIIC1
+#  define RX65N_RXI1_IRQ        (RX65N_RIIC1_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI1_IRQ        (RX65N_RIIC1_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_RIIC0_IRQBASE   (RX65N_RIIC1_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_RIIC0_IRQBASE    RX65N_RIIC1_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_RIIC0
+#  define RX65N_RXI0_IRQ        (RX65N_RIIC0_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI0_IRQ        (RX65N_RIIC0_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_RIIC2_IRQBASE   (RX65N_RIIC0_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_RIIC2_IRQBASE    RX65N_RIIC0_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_RIIC2
+#  define RX65N_RXI2_IRQ        (RX65N_RIIC2_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI2_IRQ        (RX65N_RIIC2_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI0_IRQBASE    (RX65N_RIIC2_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI0_IRQBASE    RX65N_RIIC2_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_SCI0
+#  define RX65N_RXI0_IRQ        (RX65N_SCI0_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI0_IRQ        (RX65N_SCI0_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI1_IRQBASE    (RX65N_SCI0_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI1_IRQBASE    RX65N_SCI0_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI1
+#  define RX65N_RXI1_IRQ        (RX65N_SCI1_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI1_IRQ        (RX65N_SCI1_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI2_IRQBASE    (RX65N_SCI1_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX_SCI2_IRQBASE    RX65N_SCI1_IRQBASE
+#endif
+
+//#define RX_SCI2_IRQBASE (0)
+#ifdef CONFIG_RX65N_SCI2                                           /* SCI0 */
+#  define RX_ERI2_IRQ     (RX_SCI2_IRQBASE+0) /*  ERI0 */
+#  define RX_RXI2_IRQ     (RX_SCI2_IRQBASE+1) /*  RxI0 */
+#  define RX_TXI2_IRQ     (RX_SCI2_IRQBASE+2) /*  TxI0 */
+#  define RX_TEI2_IRQ     (RX_SCI2_IRQBASE+3) /*  TEI0 */
+#  define RX65N_ICU_IRQ_IRQBASE (RX_SCI2_IRQBASE+2)
+#else
+#  define RX65N_ICU_IRQ_IRQBASE  RX_SCI2_IRQBASE
+#endif
+
+
+/*#ifdef CONFIG_RX65N_SCI2
+#  define RX65N_RXI2_IRQ              (RX65N_SCI2_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI2_IRQ              (RX65N_SCI2_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_ICU_IRQ_IRQBASE    (RX65N_SCI2_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_ICU_IRQ_IRQBASE    RX65N_SCI2_IRQBASE
+#endif*/
+
+#ifdef CONFIG_RX65N_ICU_IRQ
+#  define RX65N_IRQ0_IRQ      (RX65N_ICU_SWITCH_IRQBASE)      
+#  define RX65N_IRQ1_IRQ      (RX65N_ICU_SWITCH_IRQBASE+1)  
+#  define RX65N_IRQ2_IRQ      (RX65N_ICU_SWITCH_IRQBASE+2)  
+#  define RX65N_IRQ3_IRQ      (RX65N_ICU_SWITCH_IRQBASE+3)  
+#  define RX65N_IRQ4_IRQ      (RX65N_ICU_SWITCH_IRQBASE+4)  
+#  define RX65N_IRQ5_IRQ      (RX65N_ICU_SWITCH_IRQBASE+5)  
+#  define RX65N_IRQ6_IRQ      (RX65N_ICU_SWITCH_IRQBASE+6)  
+#  define RX65N_IRQ7_IRQ      (RX65N_ICU_SWITCH_IRQBASE+7)  
+#  define RX65N_IRQ8_IRQ      (RX65N_ICU_SWITCH_IRQBASE+8)
+#  define RX65N_IRQ9_IRQ      (RX65N_ICU_SWITCH_IRQBASE+9)
+#  define RX65N_IRQ10_IRQ     (RX65N_ICU_SWITCH_IRQBASE+10)
+#  define RX65N_IRQ11_IRQ     (RX65N_ICU_SWITCH_IRQBASE+11)
+#  define RX65N_IRQ12_IRQ     (RX65N_ICU_SWITCH_IRQBASE+12)
+#  define RX65N_IRQ13_IRQ     (RX65N_ICU_SWITCH_IRQBASE+13)
+#  define RX65N_IRQ14_IRQ     (RX65N_ICU_SWITCH_IRQBASE+14)
+#  define RX65N_IRQ15_IRQ     (RX65N_ICU_SWITCH_IRQBASE+15)
+#  define RX65N_SCI3_IRQBASE  (RX65N_ICU_SWITCH_IRQBASE+16)
+#else
+#  define RX65N_SCI3_IRQBASE  (RX65N_ICU_SWITCH_IRQBASE)
+#endif
+
+#ifdef CONFIG_RX65N_SCI3
+#  define RX65N_RXI3_IRQ        (RX65N_SCI3_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI3_IRQ        (RX65N_SCI3_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI4_IRQBASE    (RX65N_SCI3_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI4_IRQBASE    RX65N_SCI3_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI4
+#  define RX65N_RXI4_IRQ        (RX65N_SCI4_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI4_IRQ        (RX65N_SCI4_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI5_IRQBASE    (RX65N_SCI4_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI5_IRQBASE    RX65N_SCI4_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI5
+#  define RX65N_RXI5_IRQ        (RX65N_SCI5_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI5_IRQ        (RX65N_SCI5_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI6_IRQBASE    (RX65N_SCI5_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI6_IRQBASE    RX65N_SCI5_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI6
+#  define RX65N_RXI6_IRQ        (RX65N_SCI6_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI6_IRQ        (RX65N_SCI6_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_LVD1_IRQBASE    (RX65N_SCI6_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_LVD1_IRQBASE    RX65N_SCI6_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_LVD1
+#  define RX65N_LVD1_IRQ         RX65N_LVD1_IRQBASE 
+#  define RX65N_LVD2_IRQBASE    (RX65N_LVD1_IRQBASE + 1)
+#else
+#  define RX65N_LVD2_IRQBASE    RX65N_LVD1_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_LVD2
+#  define RX65N_LVD2_IRQ           RX65N_LVD2_IRQBASE 
+#  define RX65N_USB0_R0_IRQBASE    (RX65N_LVD2_IRQBASE + 1)
+#else
+#  define RX65N_USB0_R0_IRQBASE    RX65N_LVD2_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_USB0_R0
+#  define RX65N_USBR0_IRQ       (RX65N_USB0_R0_IRQBASE)
+#  define RX65N_RTC_IRQBASE     (RX65N_USB0_R0_IRQBASE)
+#else
+#  define RX65N_RTC_IRQBASE     RX65N_USB0_R0_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_RTC
+#  define RX65N_ALM_IRQ         RX65N_RTC_IRQBASE 
+#  define RX65N_PRD_IRQ         (RX65N_RTC_IRQBASE + 1)
+#  define RX65N_IWDT_IRQBASE    (RX65N_RTC_IRQBASE + 2)
+#else
+#  define RX65N_IWDT_IRQBASE    RX65N_RTC_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_IWDT
+#  define RX65N_IWUNI_IRQ        RX65N_IWDT_IRQBASE 
+#  define RX65N_WDT_IRQBASE      (RX65N_IWDT_IRQBASE + 1)
+#else
+#  define RX65N_WDT_IRQBASE      RX65N_IWDT_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_WDT
+#  define RX65N_WUNI_IRQ         RX65N_WDT_IRQBASE 
+#  define RX65N_PDC_IRQBASE     (RX65N_WDT_IRQBASE + 1)
+#else
+#  define RX65N_PDC_IRQBASE      RX65N_WDT_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_PDC
+#  define RX65N_PCDFI_IRQ        RX65N_PDC_IRQBASE 
+#  define RX65N_SCI7_IRQBASE    (RX65N_PDC_IRQBASE + 1)
+#else
+#  define RX65N_SCI7_IRQBASE    RX65N_PDC_IRQBASE
+#endif
+
+#ifdef CONFIG_RX65N_SCI7
+#  define RX65N_RXI7_IRQ        (RX65N_SCI7_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI7_IRQ        (RX65N_SCI7_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI8_IRQBASE    (RX65N_SCI7_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI8_IRQBASE    RX65N_SCI7_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI8
+#  define RX65N_RXI8_IRQ        (RX65N_SCI8_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI8_IRQ        (RX65N_SCI8_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI9_IRQBASE    (RX65N_SCI8_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI9_IRQBASE    RX65N_SCI8_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI9
+#  define RX65N_RXI9_IRQ        (RX65N_SCI9_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI9_IRQ        (RX65N_SCI9_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI10_IRQBASE   (RX65N_SCI9_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI10_IRQBASE   RX65N_SCI9_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI10
+#  define RX65N_RXI10_IRQ        (RX65N_SCI10_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI10_IRQ        (RX65N_SCI10_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_IRQ_GROUPB_IRQBASE    (RX65N_SCI10_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_IRQ_GROUPB_IRQBASE    RX65N_SCI10_IRQBASE
+#endif
+
+#ifdef CONFIG RX65N_IRQ_GROUPB
+#  define RX65N_GROUPBE0_IRQ  (RX65N_IRQ_GROUPB_IRQBASE)
+#  define RX65N_GROUPBL2_IRQ  (RX65N_IRQ_GROUPB_IRQBASE + 1)
+#  define RX65N_RSPI2_IRQBASE (RX65N_IRQ_GROUPB_IRQBASE + 2)
+#else
+#  define RX65N_RSPI2_IRQBASE (RX65N_IRQ_GROUPB_IRQBASE)
+#endif
+
+#ifdef CONFIG_RX65N_RSPI2
+#  define RX65N_SPRI2_IRQ               RX65N_RSPI2_IRQBASE 
+#  define RX65N_SPTI2_IRQ               (RX65N_RSPI2_IRQBASE + 1)
+#  define RX65N_IRQ_GROUPBL_IRQBASE     (RX65N_RSPI2_IRQBASE + 2)
+#else
+#  define RX65N_IRQ_GROUPBL_IRQBASE     RX65N_RSPI2_IRQBASE
+#endif
+
+#ifdef CONFIG RX65N_IRQ_GROUPBL
+#  define RX65N_GROUPBL0_IRQ  (RX65N_IRQ_GROUPBL_IRQBASE)
+#  define RX65N_GROUPBL1_IRQ  (RX65N_IRQ_GROUPBL_IRQBASE + 1)
+#  define RX65N_GROUPAL0_IRQ  (RX65N_IRQ_GROUPBL_IRQBASE + 2)
+#  define RX65N_GROUPAL1_IRQ  (RX65N_IRQ_GROUPBL_IRQBASE + 3)
+#  define RX65N_SCI11_IRQBASE (RX65N_IRQ_GROUPBL_IRQBASE + 4)
+#else
+#  define RX65N_SCI11_IRQBASE (RX65N_IRQ_GROUPBL_IRQBASE)
+#endif
+
+#ifdef CONFIG_RX65N_SCI11
+#  define RX65N_RXI11_IRQ        (RX65N_SCI11_IRQBASE + RX_RXI_IRQ_OFFSET)
+#  define RX65N_TXI11_IRQ        (RX65N_SCI11_IRQBASE + RX_TXI_IRQ_OFFSET)
+#  define RX65N_SCI12_IRQBASE    (RX65N_SCI11_IRQBASE + RX_SCI_NIRQS)
+#else
+#  define RX65N_SCI12_IRQBASE    RX65N_SCI11_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_SCI12
+#  define RX65N_RXI12_IRQ        RX65N_SCI12_IRQBASE + RX_RXI_IRQ_OFFSET
+#  define RX65N_TXI12_IRQ        RX65N_SCI12_IRQBASE + RX_TXI_IRQ_OFFSET
+#  define RX65N_DMAC_IRQBASE     RX65N_SCI12_IRQBASE + RX_SCI_NIRQS
+#else
+#  define RX65N_DMAC_IRQBASE     RX65N_SCI12_IRQBASE
+#endif*/
+  
+
+#ifdef CONFIG_RX65N_DMAC
+#  define RX65N_DMAC0I_IRQ        RX65N_DMAC_IRQBASE 
+#  define RX65N_DMAC1I_IRQ        (RX65N_DMAC_IRQBASE + 1)
+#  define RX65N_DMAC2I_IRQ        (RX65N_DMAC_IRQBASE + 2)
+#  define RX65N_DMAC3I_IRQ        (RX65N_DMAC_IRQBASE + 3)
+#  define RX65N_DMAC74I_IRQ       (RX65N_DMAC_IRQBASE + 4)
+#  define RX65N_OST_IRQBASE       (RX65N_DMAC_IRQBASE + 5)
+#else
+#  define RX65N_OST_IRQBASE       RX65N_DMAC_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_OST
+#  define RX65N_OSTD1_IRQ         RX65N_OST_IRQBASE 
+#  define RX65N_EXDMAC_IRQBASE    (RX65N_OST_IRQBASE + 1)
+#else
+#  define RX65N_EXDMAC_IRQBASE    RX65N_OST_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_EXDMAC
+#  define RX65N_EXDMAC0I_IRQ         RX65N_EXDMAC_IRQBASE 
+#  define RX65N_EXDMAC1I_IRQ         (RX65N_EXDMAC_IRQBASE + 1)
+#  define RX65N_PERIB_IRQBASE        (RX65N_EXDMAC_IRQBASE + 2)
+#else
+#  define RX65N_PERIB_IRQBASE        RX65N_EXDMAC_IRQBASE
+#endif
+  
+#  ifdef CONFIG_RX65N_PERIB
+#  define RX65N_INTB128_IRQ          RX65N_PERIB_IRQBASE
+#  define RX65N_INTB129_IRQ          RX65N_PERIB_IRQBASE + 1
+#  define RX65N_INTB130_IRQ          RX65N_PERIB_IRQBASE + 2
+#  define RX65N_INTB131_IRQ          RX65N_PERIB_IRQBASE + 3
+#  define RX65N_INTB132_IRQ          RX65N_PERIB_IRQBASE + 4
+#  define RX65N_INTB133_IRQ          RX65N_PERIB_IRQBASE + 5
+#  define RX65N_INTB134_IRQ          RX65N_PERIB_IRQBASE + 6
+#  define RX65N_INTB135_IRQ          RX65N_PERIB_IRQBASE + 7
+#  define RX65N_INTB136_IRQ          RX65N_PERIB_IRQBASE + 8
+#  define RX65N_INTB137_IRQ          RX65N_PERIB_IRQBASE + 9
+#  define RX65N_INTB138_IRQ          RX65N_PERIB_IRQBASE + 10
+#  define RX65N_INTB139_IRQ          RX65N_PERIB_IRQBASE + 11
+#  define RX65N_INTB140_IRQ          RX65N_PERIB_IRQBASE + 12
+#  define RX65N_INTB141_IRQ          RX65N_PERIB_IRQBASE + 13
+#  define RX65N_INTB142_IRQ          RX65N_PERIB_IRQBASE + 14
+#  define RX65N_INTB143_IRQ          RX65N_PERIB_IRQBASE + 15
+#  define RX65N_INTB144_IRQ          RX65N_PERIB_IRQBASE + 16
+#  define RX65N_INTB145_IRQ          RX65N_PERIB_IRQBASE + 17
+#  define RX65N_INTB146_IRQ          RX65N_PERIB_IRQBASE + 18
+#  define RX65N_INTB147_IRQ          RX65N_PERIB_IRQBASE + 19
+#  define RX65N_INTB148_IRQ          RX65N_PERIB_IRQBASE + 20
+#  define RX65N_INTB149_IRQ          RX65N_PERIB_IRQBASE + 21
+#  define RX65N_INTB150_IRQ          RX65N_PERIB_IRQBASE + 22
+#  define RX65N_INTB151_IRQ          RX65N_PERIB_IRQBASE + 23
+#  define RX65N_INTB152_IRQ          RX65N_PERIB_IRQBASE + 24
+#  define RX65N_INTB153_IRQ          RX65N_PERIB_IRQBASE + 25
+#  define RX65N_INTB154_IRQ          RX65N_PERIB_IRQBASE + 26
+#  define RX65N_INTB155_IRQ          RX65N_PERIB_IRQBASE + 27
+#  define RX65N_INTB156_IRQ          RX65N_PERIB_IRQBASE + 28
+#  define RX65N_INTB157_IRQ          RX65N_PERIB_IRQBASE + 29
+#  define RX65N_INTB158_IRQ          RX65N_PERIB_IRQBASE + 30
+#  define RX65N_INTB159_IRQ          RX65N_PERIB_IRQBASE + 31
+#  define RX65N_INTB160_IRQ          RX65N_PERIB_IRQBASE + 32
+#  define RX65N_INTB161_IRQ          RX65N_PERIB_IRQBASE + 33
+#  define RX65N_INTB162_IRQ          RX65N_PERIB_IRQBASE + 34
+#  define RX65N_INTB163_IRQ          RX65N_PERIB_IRQBASE + 35
+#  define RX65N_INTB164_IRQ          RX65N_PERIB_IRQBASE + 36
+#  define RX65N_INTB165_IRQ          RX65N_PERIB_IRQBASE + 37
+#  define RX65N_INTB166_IRQ          RX65N_PERIB_IRQBASE + 38
+#  define RX65N_INTB167_IRQ          RX65N_PERIB_IRQBASE + 39
+#  define RX65N_INTB168_IRQ          RX65N_PERIB_IRQBASE + 40
+#  define RX65N_INTB169_IRQ          RX65N_PERIB_IRQBASE + 41
+#  define RX65N_INTB170_IRQ          RX65N_PERIB_IRQBASE + 42
+#  define RX65N_INTB171_IRQ          RX65N_PERIB_IRQBASE + 43
+#  define RX65N_INTB172_IRQ          RX65N_PERIB_IRQBASE + 44
+#  define RX65N_INTB173_IRQ          RX65N_PERIB_IRQBASE + 45
+#  define RX65N_INTB174_IRQ          RX65N_PERIB_IRQBASE + 46
+#  define RX65N_INTB175_IRQ          RX65N_PERIB_IRQBASE + 47
+#  define RX65N_INTB176_IRQ          RX65N_PERIB_IRQBASE + 48
+#  define RX65N_INTB177_IRQ          RX65N_PERIB_IRQBASE + 49
+#  define RX65N_INTB178_IRQ          RX65N_PERIB_IRQBASE + 50
+#  define RX65N_INTB179_IRQ          RX65N_PERIB_IRQBASE + 51
+#  define RX65N_INTB180_IRQ          RX65N_PERIB_IRQBASE + 52
+#  define RX65N_INTB181_IRQ          RX65N_PERIB_IRQBASE + 53
+#  define RX65N_INTB182_IRQ          RX65N_PERIB_IRQBASE + 54
+#  define RX65N_INTB183_IRQ          RX65N_PERIB_IRQBASE + 55
+#  define RX65N_INTB184_IRQ          RX65N_PERIB_IRQBASE + 56
+#  define RX65N_INTB185_IRQ          RX65N_PERIB_IRQBASE + 57
+#  define RX65N_INTB186_IRQ          RX65N_PERIB_IRQBASE + 58
+#  define RX65N_INTB187_IRQ          RX65N_PERIB_IRQBASE + 59
+#  define RX65N_INTB188_IRQ          RX65N_PERIB_IRQBASE + 60
+#  define RX65N_INTB189_IRQ          RX65N_PERIB_IRQBASE + 61
+#  define RX65N_INTB190_IRQ          RX65N_PERIB_IRQBASE + 62
+#  define RX65N_INTB191_IRQ          RX65N_PERIB_IRQBASE + 63
+#  define RX65N_INTB192_IRQ          RX65N_PERIB_IRQBASE + 64
+#  define RX65N_INTB193_IRQ          RX65N_PERIB_IRQBASE + 65
+#  define RX65N_INTB194_IRQ          RX65N_PERIB_IRQBASE + 66
+#  define RX65N_INTB195_IRQ          RX65N_PERIB_IRQBASE + 67
+#  define RX65N_INTB196_IRQ          RX65N_PERIB_IRQBASE + 68
+#  define RX65N_INTB197_IRQ          RX65N_PERIB_IRQBASE + 69
+#  define RX65N_INTB198_IRQ          RX65N_PERIB_IRQBASE + 70
+#  define RX65N_INTB199_IRQ          RX65N_PERIB_IRQBASE + 71
+#  define RX65N_INTB200_IRQ          RX65N_PERIB_IRQBASE + 72
+#  define RX65N_INTB201_IRQ          RX65N_PERIB_IRQBASE + 73
+#  define RX65N_INTB202_IRQ          RX65N_PERIB_IRQBASE + 74
+#  define RX65N_INTB203_IRQ          RX65N_PERIB_IRQBASE + 75
+#  define RX65N_INTB204_IRQ          RX65N_PERIB_IRQBASE + 76
+#  define RX65N_INTB205_IRQ          RX65N_PERIB_IRQBASE + 77
+#  define RX65N_INTB206_IRQ          RX65N_PERIB_IRQBASE + 78
+#  define RX65N_INTB207_IRQ          RX65N_PERIB_IRQBASE + 79
+#  define RX65N_PERIA_IRQBASE        RX65N_PERIB_IRQBASE + 80
+#else
+#  define RX65N_PERIA_IRQBASE        RX65N_PERIB_IRQBASE
+#endif
+  
+#ifdef CONFIG_RX65N_PERIA
+#  define RX65N_INTB208_IRQ          RX65N_PERIA_IRQBASE
+#  define RX65N_INTB209_IRQ          RX65N_PERIA_IRQBASE + 1
+#  define RX65N_INTB210_IRQ          RX65N_PERIA_IRQBASE + 2
+#  define RX65N_INTB211_IRQ          RX65N_PERIA_IRQBASE + 3
+#  define RX65N_INTB212_IRQ          RX65N_PERIA_IRQBASE + 4
+#  define RX65N_INTB213_IRQ          RX65N_PERIA_IRQBASE + 5
+#  define RX65N_INTB214_IRQ          RX65N_PERIA_IRQBASE + 6
+#  define RX65N_INTB215_IRQ          RX65N_PERIA_IRQBASE + 7
+#  define RX65N_INTB216_IRQ          RX65N_PERIA_IRQBASE + 8
+#  define RX65N_INTB217_IRQ          RX65N_PERIA_IRQBASE + 9
+#  define RX65N_INTB218_IRQ          RX65N_PERIA_IRQBASE + 10
+#  define RX65N_INTB219_IRQ          RX65N_PERIA_IRQBASE + 11
+#  define RX65N_INTB220_IRQ          RX65N_PERIA_IRQBASE + 12
+#  define RX65N_INTB221_IRQ          RX65N_PERIA_IRQBASE + 13
+#  define RX65N_INTB222_IRQ          RX65N_PERIA_IRQBASE + 14
+#  define RX65N_INTB223_IRQ          RX65N_PERIA_IRQBASE + 15
+#  define RX65N_INTB224_IRQ          RX65N_PERIA_IRQBASE + 16
+#  define RX65N_INTB225_IRQ          RX65N_PERIA_IRQBASE + 17
+#  define RX65N_INTB226_IRQ          RX65N_PERIA_IRQBASE + 18
+#  define RX65N_INTB227_IRQ          RX65N_PERIA_IRQBASE + 19
+#  define RX65N_INTB228_IRQ          RX65N_PERIA_IRQBASE + 20
+#  define RX65N_INTB229_IRQ          RX65N_PERIA_IRQBASE + 21
+#  define RX65N_INTB230_IRQ          RX65N_PERIA_IRQBASE + 22
+#  define RX65N_INTB231_IRQ          RX65N_PERIA_IRQBASE + 23
+#  define RX65N_INTB232_IRQ          RX65N_PERIA_IRQBASE + 24
+#  define RX65N_INTB233_IRQ          RX65N_PERIA_IRQBASE + 25
+#  define RX65N_INTB234_IRQ          RX65N_PERIA_IRQBASE + 26
+#  define RX65N_INTB235_IRQ          RX65N_PERIA_IRQBASE + 27
+#  define RX65N_INTB236_IRQ          RX65N_PERIA_IRQBASE + 28
+#  define RX65N_INTB237_IRQ          RX65N_PERIA_IRQBASE + 29
+#  define RX65N_INTB238_IRQ          RX65N_PERIA_IRQBASE + 30
+#  define RX65N_INTB239_IRQ          RX65N_PERIA_IRQBASE + 31
+#  define RX65N_INTB240_IRQ          RX65N_PERIA_IRQBASE + 32
+#  define RX65N_INTB241_IRQ          RX65N_PERIA_IRQBASE + 33
+#  define RX65N_INTB242_IRQ          RX65N_PERIA_IRQBASE + 34
+#  define RX65N_INTB243_IRQ          RX65N_PERIA_IRQBASE + 35
+#  define RX65N_INTB244_IRQ          RX65N_PERIA_IRQBASE + 36
+#  define RX65N_INTB245_IRQ          RX65N_PERIA_IRQBASE + 37
+#  define RX65N_INTB246_IRQ          RX65N_PERIA_IRQBASE + 38
+#  define RX65N_INTB247_IRQ          RX65N_PERIA_IRQBASE + 39
+#  define RX65N_INTB248_IRQ          RX65N_PERIA_IRQBASE + 40
+#  define RX65N_INTB249_IRQ          RX65N_PERIA_IRQBASE + 41
+#  define RX65N_INTB250_IRQ          RX65N_PERIA_IRQBASE + 42
+#  define RX65N_INTB251_IRQ          RX65N_PERIA_IRQBASE + 43
+#  define RX65N_INTB252_IRQ          RX65N_PERIA_IRQBASE + 44
+#  define RX65N_INTB253_IRQ          RX65N_PERIA_IRQBASE + 45
+#  define RX65N_INTB254_IRQ          RX65N_PERIA_IRQBASE + 46
+#  define RX65N_INTB255_IRQ          RX65N_PERIA_IRQBASE + 47
+//#  define NR_IRQS                    RX65N_PERIA_IRQBASE + 48
+#else
+//#  define NR_IRQS                    RX65N_PERIA_IRQBASE 
+#endif
+
+
+#endif
 /* IRQ Stack Frame Format.  The SH-1 has a push down stack.  The PC
  * and SR are pushed by hardware at the time an IRQ is taken.
  */
 
 /* Saved to the stacked by up_vector */
 
-#define REG_R8              (0)
-#define REG_R9              (1)
-#define REG_R10             (2)
-#define REG_R11             (3)
-#define REG_R12             (4)
-#define REG_R13             (5)
-#define REG_R14             (6)
 
-#define REG_PR              (7)
-//#define REG_GBR             (8)
+/* Vector table offets **************************************************************/ 
 
-/* The value of the stack pointer *before* the interrupt occurred */
+/* Trap instruction */ 
+#  define RX65N_TRAP_VNDX      (0)  
+#  define RX65N_TRAP0_VNDX     (0)  
+#  define RX65N_TRAP1_VNDX     (1)  
+#  define RX65N_TRAP2_VNDX     (2)  
+#  define RX65N_TRAP3_VNDX     (3)  
+#  define RX65N_TRAP4_VNDX     (4)  
+#  define RX65N_TRAP5_VNDX     (5)  
+#  define RX65N_TRAP6_VNDX     (6)  
+#  define RX65N_TRAP7_VNDX     (7)  
+#  define RX65N_TRAP8_VNDX     (8)  
+#  define RX65N_TRAP9_VNDX     (9)  
+#  define RX65N_TRAP10_VNDX    (10) 
+#  define RX65N_TRAP11_VNDX    (11) 
+#  define RX65N_TRAP12_VNDX    (12) 
+#  define RX65N_TRAP13_VNDX    (13) 
+#  define RX65N_TRAP14_VNDX    (14) 
+#  define RX65N_TRAP15_VNDX    (15) 
+/* Bus Error */ 
+#  define RX65N_BUSERR_VNDX    (16) 
+                                    /* 17 reserved */ 
 
-#define REG_R15             (9)
-#define REG_SP              REG_R15
+/* RAM Error */ 
+#  define RX65N_RAMERR_VNDX    (18)
+                                   /* 19-20 reserved
+ /* FIFERR Error */ 
+#  define RX65N_FIFERR_VNDX    (21)	
+                                   /* 22 reserved
+ /* FRDYI */ 
+#  define RX65N_FRDYI_VNDX     (23)
+                                   /* 24-25 reserved
+ /* ICU Interrupts */ 
+#ifdef CONFIG_ARCH_CHIP_R5F565NEDDFC
 
-/* These registers do not need to be preserved by up_saveusercontext */
+#  define RX65N_SWINT2_VNDX     (26)
+#  define RX65N_SWINT_VNDX      (27)
+#  define RX65N_IRQ0_VNDX       (64)
+#  define RX65N_IRQ1_VNDX       (65)
+#  define RX65N_IRQ2_VNDX       (66)
+#  define RX65N_IRQ3_VNDX       (67)
+#  define RX65N_IRQ4_VNDX       (68)
+#  define RX65N_IRQ5_VNDX       (69)
+#  define RX65N_IRQ6_VNDX       (70)
+#  define RX65N_IRQ7_VNDX       (71)
+#  define RX65N_IRQ8_VNDX       (72)
+#  define RX65N_IRQ9_VNDX       (73)
+#  define RX65N_IRQ10_VNDX      (74)
+#  define RX65N_IRQ11_VNDX      (75)
+#  define RX65N_IRQ12_VNDX      (76)
+#  define RX65N_IRQ13_VNDX      (77)
+#  define RX65N_IRQ14_VNDX      (78)
+#  define RX65N_IRQ15_VNDX      (79)
+#  define RX65N_GROUPBE0_VNDX   (106)
+#  define RX65N_GROUPBL2_VNDX   (107)
+#  define RX65N_GROUPBL0_VNDX   (110)
+#  define RX65N_GROUPBL1_VNDX   (111)
+#  define RX65N_GROUPAL0_VNDX   (112)
+#  define RX65N_GROUPAL1_VNDX   (113)
+  
+/* CMT Interrupts */ 
+#  define  RX65N_CMI0_VNDX      (28)
+#  define  RX65N_CMI0_VNDX      (29)
+#  define  RX65N_CMI0_VNDX      (30)
+#  define  RX65N_CMI0_VNDX      (31)
+                                      /* 32-33 reserved */ 
+  
+/* USB Interrupts */ 
+#  define RX65N_D0FIFO0_VNDX    (34)
+#  define RX65N_D1FIFO0_VNDX    (35)
+                                     /* 36-37 reserved */ 
+#  define RX65N_USBR0_VNDX      (90)
+                                     /* 91 reserved */ 
+  
+/* RSPI Interrupts */ 
+#  define RX65N_SPRI0_VNDX      (38)
+#  define RX65N_SPTI0_VNDX      (39)
+#  define RX65N_SPRI1_VNDX      (40)
+#  define RX65N_SPTI1_VNDX      (41)
+#  define RX65N_SPRI2_VNDX      (108)
+#  define RX65N_SPTI2_VNDX      (109)
 
-#define REG_MACL            (10)
-#define REG_MACH            (11)
-#define REG_R0              (12)
-#define REG_R1              (13)
-#define REG_R2              (14)
-#define REG_R3              (15)
-#define REG_R5              (16)
-#define REG_R6              (17)
-#define REG_R7              (18)
+/* QSPI Interrupts */ 
+#  define RX65N_SPRI_VNDX       (42)
+#  define RX65N_SPTI_VNDX       (43)
+  
+/* SDHI MMC Interrupts */ 
+#  define RX65N_SBFAI_VNDX      (44)
+#  define RX65N_MBFAI_VNDX      (45)
+                                    /* 46 -49 reserved 
+ /* RIIC Interrupts */ 
+#  define RX65N_EEI1_VNDX       (111) 
+#  define RX65N_RXI1_VNDX       (50)
+#  define RX65N_TXI1_VNDX       (51)	
+#  define RX65N_TEI1_VNDX       (111)
+  
+#  define RX65N_EEI0_VNDX       (111) 
+#  define RX65N_RXI0_VNDX       (52)
+#  define RX65N_TXI0_VNDX       (53)	
+#  define RX65N_TEI0_VNDX       (111)
+  
+#  define RX65N_EEI2_VNDX       (111) 
+#  define RX65N_RXI2_VNDX       (54)
+#  define RX65N_TXI2_VNDX       (55)	
+#  define RX65N_TEI2_VNDX       (111)
+  
 
-/* Saved to the stack by the trampoline logic */
+/* SCI Interrupts */ 
+#  define RX65N_ERI0_VNDX       (110) 
+#  define RX65N_RXI0_VNDX       (58)
+#  define RX65N_TXI0_VNDX       (59)	
+#  define RX65N_TEI0_VNDX       (110)
+  
+#  define RX65N_ERI1_VNDX       (110) 
+#  define RX65N_RXI1_VNDX       (60)
+#  define RX65N_TXI1_VNDX       (61)	
+#  define RX65N_TEI1_VNDX       (110)
+  
+#  define RX65N_ERI2_VNDX       (110) 
+#  define RX65N_RXI2_VNDX       (62)
+#  define RX65N_TXI2_VNDX       (63)	
+#  define RX65N_TEI2_VNDX       (110)
+  
+#  define RX65N_ERI3_VNDX       (110) 
+#  define RX65N_RXI3_VNDX       (80)
+#  define RX65N_TXI3_VNDX       (81)	
+#  define RX65N_TEI3_VNDX       (110)	
+  
+#  define RX65N_ERI4_VNDX       (110) 
+#  define RX65N_RXI4_VNDX       (82)
+#  define RX65N_TXI4_VNDX       (83)	
+#  define RX65N_TEI4_VNDX       (110)
+  
+#  define RX65N_ERI5_VNDX       (110) 
+#  define RX65N_RXI5_VNDX       (84)
+#  define RX65N_TXI5_VNDX       (85)	
+#  define RX65N_TEI5_VNDX       (110)	
+  
+#  define RX65N_ERI6_VNDX       (110) 
+#  define RX65N_RXI6_VNDX       (86)
+#  define RX65N_TXI6_VNDX       (87)	
+#  define RX65N_TEI6_VNDX       (110)	
+  
+#  define RX65N_ERI7_VNDX       (110) 
+#  define RX65N_RXI7_VNDX       (98)
+#  define RX65N_TXI7_VNDX       (99)	
+#  define RX65N_TEI7_VNDX       (110)
+  
+#  define RX65N_ERI8_VNDX       (111) 
+#  define RX65N_RXI8_VNDX       (100)
+#  define RX65N_TXI8_VNDX       (101)	
+#  define RX65N_TEI8_VNDX       (111)	
+  
+#  define RX65N_ERI9_VNDX       (111) 
+#  define RX65N_RXI9_VNDX       (102)
+#  define RX65N_TXI9_VNDX       (103)	
+#  define RX65N_TEI9_VNDX       (111)
+  
+#  define RX65N_ERI10_VNDX       (112) 
+#  define RX65N_RXI10_VNDX       (104)
+#  define RX65N_TXI10_VNDX       (105)	
+#  define RX65N_TEI10_VNDX       (112)
+  
+#  define RX65N_ERI11_VNDX       (112) 
+#  define RX65N_RXI11_VNDX       (114)
+#  define RX65N_TXI11_VNDX       (115)	
+#  define RX65N_TEI11_VNDX       (112)
+  
+#  define RX65N_ERI12_VNDX       (110) 
+#  define RX65N_RXI12_VNDX       (116)
+#  define RX65N_TXI12_VNDX       (117)	
+#  define RX65N_TEI12_VNDX       (110)
+  
 
-#define REG_R4              (19)
+/* LVD Interrupts */ 
+#  define RX65N_LVD1_VNDX        (88)
+#  define RX65N_LVD2_VNDX        (89)
+  
 
-/* Pushed by hardware when the exception is taken */
+/* RTC Interrupts */ 
+#  define RX65N_ALM_VNDX         (92)
+#  define RX65N_PRD_VNDX         (93)
+                                          /* 94 reserved */ 
 
-#define REG_PC              (20)
-#define REG_SR              (21)
+/* WDT Interrupts */ 
+#  define RX65N_IWUNI_VNDX        (95)
+#  define RX65N_WUNI_VNDX         (96)
+  
 
-#define RX_ERI2_VNDX      (110) /* 104: SCI1 ERI1 */
-#define RX_RXI2_VNDX      (54) /* 105:      RxI1 */
-#define RX_TXI2_VNDX      (55) /* 106:      TxI1 */
-#define RX_TEI2_VNDX      (110) /* 107:      TEI1 */
+/* PDC Interrupts */ 
+#  define RX65N_PCDFI_VNDX        (97)								 
+  
+
+/* DMAC Interrupts */ 
+#  define RX65N_DMAC0I_VNDX       (120)
+#  define RX65N_DMAC1I_VNDX       (121)
+#  define RX65N_DMAC2I_VNDX       (122)
+#  define RX65N_DMAC3I_VNDX       (123)
+#  define RX65N_DMAC74I_VNDX      (124)
+  
+
+/*OST Interrupts */ 
+#  define RX65N_OSTDI_VNDX        (125)
+  
+
+/* EXDMAC Interrupts */ 
+#  define RX65N_EXDMAC0I_VNDX        (126)
+#  define RX65N_EXDMAC1I_VNDX        (127)
+  
+
+/* PERIB Interrupts */ 
+#  define RX65N_INTB128_VNDX         (128)
+#  define RX65N_INTB129_VNDX         (129)
+#  define RX65N_INTB130_VNDX         (130)
+#  define RX65N_INTB131_VNDX         (131)
+#  define RX65N_INTB132_VNDX         (132)
+#  define RX65N_INTB133_VNDX         (133)
+#  define RX65N_INTB134_VNDX         (134)
+#  define RX65N_INTB135_VNDX         (135)
+#  define RX65N_INTB136_VNDX         (136)
+#  define RX65N_INTB137_VNDX         (137)
+#  define RX65N_INTB138_VNDX         (138)
+#  define RX65N_INTB139_VNDX         (139)
+#  define RX65N_INTB140_VNDX         (140)
+#  define RX65N_INTB141_VNDX         (141)
+#  define RX65N_INTB142_VNDX         (142)
+#  define RX65N_INTB143_VNDX         (143)
+#  define RX65N_INTB144_VNDX         (144)
+#  define RX65N_INTB145_VNDX         (145)
+#  define RX65N_INTB146_VNDX         (146)
+#  define RX65N_INTB147_VNDX         (147)
+#  define RX65N_INTB148_VNDX         (148)
+#  define RX65N_INTB149_VNDX         (149)
+#  define RX65N_INTB150_VNDX         (150)
+#  define RX65N_INTB151_VNDX         (151)
+#  define RX65N_INTB152_VNDX         (152)
+#  define RX65N_INTB153_VNDX         (153)
+#  define RX65N_INTB154_VNDX         (154)
+#  define RX65N_INTB155_VNDX         (155)
+#  define RX65N_INTB156_VNDX         (156)
+#  define RX65N_INTB157_VNDX         (157)
+#  define RX65N_INTB158_VNDX         (158)
+#  define RX65N_INTB159_VNDX         (159)
+#  define RX65N_INTB160_VNDX         (160)
+#  define RX65N_INTB161_VNDX         (161)
+#  define RX65N_INTB162_VNDX         (162)
+#  define RX65N_INTB163_VNDX         (163)
+#  define RX65N_INTB164_VNDX         (164)
+#  define RX65N_INTB165_VNDX         (165)
+#  define RX65N_INTB166_VNDX         (166)
+#  define RX65N_INTB167_VNDX         (167)
+#  define RX65N_INTB168_VNDX         (168)
+#  define RX65N_INTB169_VNDX         (169)
+#  define RX65N_INTB170_VNDX         (170)
+#  define RX65N_INTB171_VNDX         (171)
+#  define RX65N_INTB172_VNDX         (172)
+#  define RX65N_INTB173_VNDX         (173)
+#  define RX65N_INTB174_VNDX         (174)
+#  define RX65N_INTB175_VNDX         (175)
+#  define RX65N_INTB176_VNDX         (176)
+#  define RX65N_INTB177_VNDX         (177)
+#  define RX65N_INTB178_VNDX         (178)
+#  define RX65N_INTB179_VNDX         (179)
+#  define RX65N_INTB180_VNDX         (180)
+#  define RX65N_INTB181_VNDX         (181)
+#  define RX65N_INTB182_VNDX         (182)
+#  define RX65N_INTB183_VNDX         (183)
+#  define RX65N_INTB184_VNDX         (184)
+#  define RX65N_INTB185_VNDX         (185)
+#  define RX65N_INTB186_VNDX         (186)
+#  define RX65N_INTB187_VNDX         (187)
+#  define RX65N_INTB188_VNDX         (188)
+#  define RX65N_INTB189_VNDX         (189)
+#  define RX65N_INTB190_VNDX         (190)
+#  define RX65N_INTB191_VNDX         (191)
+#  define RX65N_INTB192_VNDX         (192)
+#  define RX65N_INTB193_VNDX         (193)
+#  define RX65N_INTB194_VNDX         (194)
+#  define RX65N_INTB195_VNDX         (195)
+#  define RX65N_INTB196_VNDX         (196)
+#  define RX65N_INTB197_VNDX         (197)
+#  define RX65N_INTB198_VNDX         (198)
+#  define RX65N_INTB199_VNDX         (199)
+#  define RX65N_INTB200_VNDX         (200)
+#  define RX65N_INTB201_VNDX         (201)
+#  define RX65N_INTB202_VNDX         (202)
+#  define RX65N_INTB203_VNDX         (203)
+#  define RX65N_INTB204_VNDX         (204)
+#  define RX65N_INTB205_VNDX         (205)
+#  define RX65N_INTB206_VNDX         (206)
+#  define RX65N_INTB207_VNDX         (207)
+  
+
+/*PERIA Interrupts */ 
+#  define RX65N_INTB208_VNDX         (208)
+#  define RX65N_INTB209_VNDX         (209)
+#  define RX65N_INTB210_VNDX         (210)
+#  define RX65N_INTB211_VNDX         (211)
+#  define RX65N_INTB212_VNDX         (212)
+#  define RX65N_INTB213_VNDX         (213)
+#  define RX65N_INTB214_VNDX         (214)
+#  define RX65N_INTB215_VNDX         (215)
+#  define RX65N_INTB216_VNDX         (216)
+#  define RX65N_INTB217_VNDX         (217)
+#  define RX65N_INTB218_VNDX         (218)
+#  define RX65N_INTB219_VNDX         (219)
+#  define RX65N_INTB220_VNDX         (220)
+#  define RX65N_INTB221_VNDX         (221)
+#  define RX65N_INTB222_VNDX         (222)
+#  define RX65N_INTB223_VNDX         (223)
+#  define RX65N_INTB224_VNDX         (224)
+#  define RX65N_INTB225_VNDX         (225)
+#  define RX65N_INTB226_VNDX         (226)
+#  define RX65N_INTB227_VNDX         (227)
+#  define RX65N_INTB228_VNDX         (228)
+#  define RX65N_INTB229_VNDX         (229)
+#  define RX65N_INTB230_VNDX         (230)
+#  define RX65N_INTB231_VNDX         (231)
+#  define RX65N_INTB232_VNDX         (232)
+#  define RX65N_INTB233_VNDX         (233)
+#  define RX65N_INTB234_VNDX         (234)
+#  define RX65N_INTB235_VNDX         (235)
+#  define RX65N_INTB236_VNDX         (236)
+#  define RX65N_INTB237_VNDX         (237)
+#  define RX65N_INTB238_VNDX         (238)
+#  define RX65N_INTB239_VNDX         (239)
+#  define RX65N_INTB240_VNDX         (240)
+#  define RX65N_INTB241_VNDX         (241)
+#  define RX65N_INTB242_VNDX         (242)
+#  define RX65N_INTB243_VNDX         (243)
+#  define RX65N_INTB244_VNDX         (244)
+#  define RX65N_INTB245_VNDX         (245)
+#  define RX65N_INTB246_VNDX         (246)
+#  define RX65N_INTB247_VNDX         (247)
+#  define RX65N_INTB248_VNDX         (248)
+#  define RX65N_INTB249_VNDX         (249)
+#  define RX65N_INTB250_VNDX         (250)
+#  define RX65N_INTB251_VNDX         (251)
+#  define RX65N_INTB252_VNDX         (252)
+#  define RX65N_INTB253_VNDX         (253)
+#  define RX65N_INTB254_VNDX         (254)
+#  define RX65N_INTB255_VNDX         (255)
+#endif
+#define RX65N_NVECTORS               (256)
+
+
+
+/* Register information */
+ 
+#  define REG_R8              (0)
+#  define REG_R9              (1)
+#  define REG_R10             (2)
+#  define REG_R11             (3)
+#  define REG_R12             (4)
+#  define REG_R13             (5)
+#  define REG_R14             (6)
+#  define REG_R15             (7)
+  
+ /* The value of the stack pointer *before* the interrupt occurred */ 
+  
+#  define REG_R0             (8)
+#define REG_SP              REG_R0
+/* These registers do not need to be preserved by up_saveusercontext */ 
+  
+//#  define REG_ACC0            (10)
+//#  define REG_ACC1            (11)
+#  define REG_R1              (9)
+#  define REG_R2              (10)
+#  define REG_R3              (11)
+#  define REG_R5              (12)
+#  define REG_R6              (13)
+#  define REG_R7              (14)
+  
+
+/* Saved to the stack by the trampoline logic */ 
+  
+#  define REG_R4              (15)
+  
+
+/* Pushed by hardware when the exception is taken */ 
+  
+#  define REG_PC               (16)
+#  define REG_PSW              (17)
+#  define XCPTCONTEXT_REGS     (18)
+#  define XCPTCONTEXT_SIZE     (4 * XCPTCONTEXT_REGS)
 #ifndef __ASSEMBLY__
-
 struct xcptcontext
 {
-#ifndef CONFIG_DISABLE_SIGNALS
   /* The following function pointer is non-zero if there are pending signals
    * to be processed.
    */
 
+#ifndef CONFIG_DISABLE_SIGNALS
   void *sigdeliver; /* Actual type is sig_deliver_t */
 
   /* These are saved copies of LR and SR used during signal processing. */
@@ -94,8 +958,9 @@ struct xcptcontext
 
   /* Register save area */
 
-  uint32_t regs[22];
+  uint32_t regs[XCPTCONTEXT_REGS];
 };
+#endif
 
 #ifndef __ASSEMBLY__
 
@@ -110,977 +975,61 @@ struct xcptcontext
 
 /* Return the current interrupt enable state and disable IRQs */
 
+/* Get the current value of the SR */
+
+static inline irqstate_t __getsr(void) 
+{
+  /*irqstate_t flags;
+  __asm__ __volatile__("mvfc psw, %0":"=r"(flags));
+  return flags;*/
+}
+
+/* Set the new value of the SR */
+
+static inline void __setsr(irqstate_t psw) 
+{
+ /* __asm__ __volatile__("mvtc %0, psw": :"r"(psw));*/
+} 
+
+/* Return the current interrupt enable state and disable interrupts */
+
 static inline irqstate_t up_irq_save(void)
 {
-  
-
-/* Restore saved IRQ state */
+  /*irqstate_t flags = __getsr();
+  __setsr(flags | 0x00010000);
+  return flags;*/
 }
-static inline void up_irq_restore(irqstate_t flags)
-{
-  
-}
-
-/* Return the current interrupt enable state and enable IRQs */
-
-static inline irqstate_t up_irq_enable(void)
-{
  
+/* Disable interrupts */
+
+static inline void up_irq_disable(void) 
+{
+  /*uint32_t flags = __getsr();
+  __setsr(flags | 0x00010000);*/
+}
+
+/* Enable interrupts */
+
+static inline void up_irq_enable(void) 
+{
+  /*uint32_t flags = __getsr();*/
+  /*__setsr(flags & ~0x00010000);*/
+}
+
+/* Restore saved interrupt state */
+
+static inline void up_irq_restore(irqstate_t flags) 
+{
+  /*if ((flags & 0x00010000) != 0x00010000)
+    {
+      up_irq_enable();
+    }
+  else
+    {
+      up_irq_disable();
+    }*/
 }
 
 #endif
-// Exception(Supervisor Instruction)
-#pragma interrupt (Excep_SuperVisorInst)
-void INT_Excep_SuperVisorInst(void) __attribute__ ((interrupt));
-
-// Exception(Access Instruction)
-#pragma interrupt (Excep_AccessInst)
-void INT_Excep_AccessInst(void) __attribute__ ((interrupt));
-
-// Exception(Undefined Instruction)
-#pragma interrupt (Excep_UndefinedInst)
-void INT_Excep_UndefinedInst(void) __attribute__ ((interrupt));
-
-// Exception(Floating Point)
-#pragma interrupt (Excep_FloatingPoint)
-void INT_Excep_FloatingPoint(void) __attribute__ ((interrupt));
-
-// NMI
-#pragma interrupt (NonMaskableInterrupt)
-void INT_NonMaskableInterrupt(void) __attribute__ ((interrupt));
-
-// Dummy
-#pragma interrupt (Dummy)
-void Dummy(void) __attribute__ ((interrupt));
-
-// BRK
-#pragma interrupt (Excep_BRK(vect=0))
-void INT_Excep_BRK(void) __attribute__ ((interrupt));
-
-// vector  1 reserved
-// vector  2 reserved
-// vector  3 reserved
-// vector  4 reserved
-// vector  5 reserved
-// vector  6 reserved
-// vector  7 reserved
-// vector  8 reserved
-// vector  9 reserved
-// vector 10 reserved
-// vector 11 reserved
-// vector 12 reserved
-// vector 13 reserved
-// vector 14 reserved
-// vector 15 reserved
-
-// BSC BUSERR
-#pragma interrupt (Excep_BSC_BUSERR(vect=16))
-void INT_Excep_BSC_BUSERR(void) __attribute__ ((interrupt));
-
-// vector 17 reserved
-
-// RAM RAMERR
-#pragma interrupt (Excep_RAM_RAMERR(vect=18))
-void INT_Excep_RAM_RAMERR(void) __attribute__ ((interrupt));
-
-// vector 19 reserved
-// vector 20 reserved
-
-// FCU FIFERR
-#pragma interrupt (Excep_FCU_FIFERR(vect=21))
-void INT_Excep_FCU_FIFERR(void) __attribute__ ((interrupt));
-
-// vector 22 reserved
-
-// FCU FRDYI
-#pragma interrupt (Excep_FCU_FRDYI(vect=23))
-void INT_Excep_FCU_FRDYI(void) __attribute__ ((interrupt));
-
-// vector 24 reserved
-// vector 25 reserved
-
-// ICU SWINT2
-#pragma interrupt (Excep_ICU_SWINT2(vect=26))
-void INT_Excep_ICU_SWINT2(void) __attribute__ ((interrupt));
-
-// ICU SWINT
-#pragma interrupt (Excep_ICU_SWINT(vect=27))
-void INT_Excep_ICU_SWINT(void) __attribute__ ((interrupt));
-
-// CMT0 CMI0
-#pragma interrupt (Excep_CMT0_CMI0(vect=28))
-void INT_Excep_CMT0_CMI0(void) __attribute__ ((interrupt));
-
-// CMT1 CMI1
-#pragma interrupt (Excep_CMT1_CMI1(vect=29))
-void INT_Excep_CMT1_CMI1(void) __attribute__ ((interrupt));
-
-// CMTW0 CMWI0
-#pragma interrupt (Excep_CMTW0_CMWI0(vect=30))
-void INT_Excep_CMTW0_CMWI0(void) __attribute__ ((interrupt));
-
-// CMTW1 CMWI1
-#pragma interrupt (Excep_CMTW1_CMWI1(vect=31))
-void INT_Excep_CMTW1_CMWI1(void) __attribute__ ((interrupt));
-
-// vector 32 reserved
-// vector 33 reserved
-
-// USB0 D0FIFO0
-#pragma interrupt (Excep_USB0_D0FIFO0(vect=34))
-void INT_Excep_USB0_D0FIFO0(void) __attribute__ ((interrupt));
-
-// USB0 D1FIFO0
-#pragma interrupt (Excep_USB0_D1FIFO0(vect=35))
-void INT_Excep_USB0_D1FIFO0(void) __attribute__ ((interrupt));
-
-// vector 36 reserved
-// vector 37 reserved
-
-// RSPI0 SPRI0
-#pragma interrupt (Excep_RSPI0_SPRI0(vect=38))
-void INT_Excep_RSPI0_SPRI0(void) __attribute__ ((interrupt));
-
-// RSPI0 SPTI0
-#pragma interrupt (Excep_RSPI0_SPTI0(vect=39))
-void INT_Excep_RSPI0_SPTI0(void) __attribute__ ((interrupt));
-
-// RSPI1 SPRI1
-#pragma interrupt (Excep_RSPI1_SPRI1(vect=40))
-void INT_Excep_RSPI1_SPRI1(void) __attribute__ ((interrupt));
-
-// RSPI1 SPTI1
-#pragma interrupt (Excep_RSPI1_SPTI1(vect=41))
-void INT_Excep_RSPI1_SPTI1(void) __attribute__ ((interrupt));
-
-// QSPI SPRI
-#pragma interrupt (Excep_QSPI_SPRI(vect=42))
-void INT_Excep_QSPI_SPRI(void) __attribute__ ((interrupt));
-
-// QSPI SPTI
-#pragma interrupt (Excep_QSPI_SPTI(vect=43))
-void INT_Excep_QSPI_SPTI(void) __attribute__ ((interrupt));
-
-// SDHI SBFAI
-#pragma interrupt (Excep_SDHI_SBFAI(vect=44))
-void INT_Excep_SDHI_SBFAI(void) __attribute__ ((interrupt));
-
-// MMCIF MBFAI
-#pragma interrupt (Excep_MMCIF_MBFAI(vect=45))
-void INT_Excep_MMCIF_MBFAI(void) __attribute__ ((interrupt));
-
-// vector 46 reserved
-// vector 47 reserved
-// vector 48 reserved
-// vector 49 reserved
-// vector 50 reserved
-// vector 51 reserved
-
-// RIIC0 RXI0
-#pragma interrupt (Excep_RIIC0_RXI0(vect=52))
-void INT_Excep_RIIC0_RXI0(void) __attribute__ ((interrupt));
-
-// RIIC0 TXI0
-#pragma interrupt (Excep_RIIC0_TXI0(vect=53))
-void INT_Excep_RIIC0_TXI0(void) __attribute__ ((interrupt));
-
-// RIIC2 RXI2
-#pragma interrupt (Excep_RIIC2_RXI2(vect=54))
-void INT_Excep_RIIC2_RXI2(void) __attribute__ ((interrupt));
-
-// RIIC2 TXI2
-#pragma interrupt (Excep_RIIC2_TXI2(vect=55))
-void INT_Excep_RIIC2_TXI2(void) __attribute__ ((interrupt));
-
-// vector 56 reserved
-// vector 57 reserved
-
-// SCI0 RXI0
-#pragma interrupt (Excep_SCI0_RXI0(vect=58))
-void INT_Excep_SCI0_RXI0(void) __attribute__ ((interrupt));
-
-// SCI0 TXI0
-#pragma interrupt (Excep_SCI0_TXI0(vect=59))
-void INT_Excep_SCI0_TXI0(void) __attribute__ ((interrupt));
-
-// SCI1 RXI1
-#pragma interrupt (Excep_SCI1_RXI1(vect=60))
-void INT_Excep_SCI1_RXI1(void) __attribute__ ((interrupt));
-
-// SCI1 TXI1
-#pragma interrupt (Excep_SCI1_TXI1(vect=61))
-void INT_Excep_SCI1_TXI1(void) __attribute__ ((interrupt));
-
-// SCI2 RXI2
-//#pragma interrupt (Excep_SCI2_RXI2(vect=62))
-void INT_Excep_SCI2_RXI2(void) __attribute__ ((interrupt));
-
-// SCI2 TXI2
-#pragma interrupt (Excep_SCI2_TXI2(vect=63))
-void INT_Excep_SCI2_TXI2(void) __attribute__ ((interrupt));
-
-// ICU IRQ0
-#pragma interrupt (Excep_ICU_IRQ0(vect=64))
-void INT_Excep_ICU_IRQ0(void) __attribute__ ((interrupt));
-
-// ICU IRQ1
-#pragma interrupt (Excep_ICU_IRQ1(vect=65))
-void INT_Excep_ICU_IRQ1(void) __attribute__ ((interrupt));
-
-// ICU IRQ2
-#pragma interrupt (Excep_ICU_IRQ2(vect=66))
-void INT_Excep_ICU_IRQ2(void) __attribute__ ((interrupt));
-
-// ICU IRQ3
-#pragma interrupt (Excep_ICU_IRQ3(vect=67))
-void INT_Excep_ICU_IRQ3(void) __attribute__ ((interrupt));
-
-// ICU IRQ4
-#pragma interrupt (Excep_ICU_IRQ4(vect=68))
-void INT_Excep_ICU_IRQ4(void) __attribute__ ((interrupt));
-
-// ICU IRQ5
-#pragma interrupt (Excep_ICU_IRQ5(vect=69))
-void INT_Excep_ICU_IRQ5(void) __attribute__ ((interrupt));
-
-// ICU IRQ6
-#pragma interrupt (Excep_ICU_IRQ6(vect=70))
-void INT_Excep_ICU_IRQ6(void) __attribute__ ((interrupt));
-
-// ICU IRQ7
-#pragma interrupt (Excep_ICU_IRQ7(vect=71))
-void INT_Excep_ICU_IRQ7(void) __attribute__ ((interrupt));
-
-// ICU IRQ8
-#pragma interrupt (Excep_ICU_IRQ8(vect=72))
-void INT_Excep_ICU_IRQ8(void) __attribute__ ((interrupt));
-
-// ICU IRQ9
-#pragma interrupt (Excep_ICU_IRQ9(vect=73))
-void INT_Excep_ICU_IRQ9(void) __attribute__ ((interrupt));
-
-// ICU IRQ10
-#pragma interrupt (Excep_ICU_IRQ10(vect=74))
-void INT_Excep_ICU_IRQ10(void) __attribute__ ((interrupt));
-
-// ICU IRQ11
-#pragma interrupt (Excep_ICU_IRQ11(vect=75))
-void INT_Excep_ICU_IRQ11(void) __attribute__ ((interrupt));
-
-// ICU IRQ12
-#pragma interrupt (Excep_ICU_IRQ12(vect=76))
-void INT_Excep_ICU_IRQ12(void) __attribute__ ((interrupt));
-
-// ICU IRQ13
-#pragma interrupt (Excep_ICU_IRQ13(vect=77))
-void INT_Excep_ICU_IRQ13(void) __attribute__ ((interrupt));
-
-// ICU IRQ14
-#pragma interrupt (Excep_ICU_IRQ14(vect=78))
-void INT_Excep_ICU_IRQ14(void) __attribute__ ((interrupt));
-
-// ICU IRQ15
-#pragma interrupt (Excep_ICU_IRQ15(vect=79))
-void INT_Excep_ICU_IRQ15(void) __attribute__ ((interrupt));
-
-// SCI3 RXI3
-#pragma interrupt (Excep_SCI3_RXI3(vect=80))
-void INT_Excep_SCI3_RXI3(void) __attribute__ ((interrupt));
-
-// SCI3 TXI3
-#pragma interrupt (Excep_SCI3_TXI3(vect=81))
-void INT_Excep_SCI3_TXI3(void) __attribute__ ((interrupt));
-
-// SCI4 RXI4
-#pragma interrupt (Excep_SCI4_RXI4(vect=82))
-void INT_Excep_SCI4_RXI4(void) __attribute__ ((interrupt));
-
-// SCI4 TXI4
-#pragma interrupt (Excep_SCI4_TXI4(vect=83))
-void INT_Excep_SCI4_TXI4(void) __attribute__ ((interrupt));
-
-// SCI5 RXI5
-#pragma interrupt (Excep_SCI5_RXI5(vect=84))
-void INT_Excep_SCI5_RXI5(void) __attribute__ ((interrupt));
-
-// SCI5 TXI5
-#pragma interrupt (Excep_SCI5_TXI5(vect=85))
-void INT_Excep_SCI5_TXI5(void) __attribute__ ((interrupt));
-
-// SCI6 RXI6
-#pragma interrupt (Excep_SCI6_RXI6(vect=86))
-void INT_Excep_SCI6_RXI6(void) __attribute__ ((interrupt));
-
-// SCI6 TXI6
-#pragma interrupt (Excep_SCI6_TXI6(vect=87))
-void INT_Excep_SCI6_TXI6(void) __attribute__ ((interrupt));
-
-// LVD1 LVD1
-#pragma interrupt (Excep_LVD1_LVD1(vect=88))
-void INT_Excep_LVD1_LVD1(void) __attribute__ ((interrupt));
-
-// LVD2 LVD2
-#pragma interrupt (Excep_LVD2_LVD2(vect=89))
-void INT_Excep_LVD2_LVD2(void) __attribute__ ((interrupt));
-
-// USB0 USBR0
-#pragma interrupt (Excep_USB0_USBR0(vect=90))
-void INT_Excep_USB0_USBR0(void) __attribute__ ((interrupt));
-
-// RTC ALM
-#pragma interrupt (Excep_RTC_ALM(vect=92))
-void INT_Excep_RTC_ALM(void) __attribute__ ((interrupt));
-
-// RTC PRD
-#pragma interrupt (Excep_RTC_PRD(vect=93))
-void INT_Excep_RTC_PRD(void) __attribute__ ((interrupt));
-
-// USBA USBAR
-#pragma interrupt (Excep_USBA_USBAR(vect=94))
-void INT_Excep_USBA_USBAR(void) __attribute__ ((interrupt));
-
-// IWDT IWUNI
-#pragma interrupt (Excep_IWDT_IWUNI(vect=95))
-void INT_Excep_IWDT_IWUNI(void) __attribute__ ((interrupt));
-
-// WDT WUNI
-#pragma interrupt (Excep_WDT_WUNI(vect=96))
-void INT_Excep_WDT_WUNI(void) __attribute__ ((interrupt));
-
-// PDC PCDFI
-#pragma interrupt (Excep_PDC_PCDFI(vect=97))
-void INT_Excep_PDC_PCDFI(void) __attribute__ ((interrupt));
-
-// SCI7 RXI7
-#pragma interrupt (Excep_SCI7_RXI7(vect=98))
-void INT_Excep_SCI7_RXI7(void) __attribute__ ((interrupt));
-
-// SCI7 TXI7
-#pragma interrupt (Excep_SCI7_TXI7(vect=99))
-void INT_Excep_SCI7_TXI7(void) __attribute__ ((interrupt));
-
-// SCI8 RXI8
-#pragma interrupt (Excep_SCI8_RXI8(vect=100))
-void INT_Excep_SCI8_RXI8(void) __attribute__ ((interrupt));
-
-// SCI8 TXI8
-#pragma interrupt (Excep_SCI8_TXI8(vect=101))
-void INT_Excep_SCI8_TXI8(void) __attribute__ ((interrupt));
-
-// SCI9 RXI9
-#pragma interrupt (Excep_SCI9_RXI9(vect=102))
-void INT_Excep_SCI9_RXI9(void) __attribute__ ((interrupt));
-
-// SCI9 TXI9
-#pragma interrupt (Excep_SCI9_TXI9(vect=103))
-void INT_Excep_SCI9_TXI9(void) __attribute__ ((interrupt));
-
-// SCI10 RXI10
-#pragma interrupt (Excep_SCI10_RXI10(vect=104))
-void INT_Excep_SCI10_RXI10(void) __attribute__ ((interrupt));
-
-// SCI10 TXI10
-#pragma interrupt (Excep_SCI10_TXI10(vect=105))
-void INT_Excep_SCI10_TXI10(void) __attribute__ ((interrupt));
-
-// ICU GROUPBE0
-#pragma interrupt (Excep_ICU_GROUPBE0(vect=106))
-void INT_Excep_ICU_GROUPBE0(void) __attribute__ ((interrupt));
-
-// ICU GROUPBL2
-#pragma interrupt (Excep_ICU_GROUPBL2(vect=107))
-void INT_Excep_ICU_GROUPBL2(void) __attribute__ ((interrupt));
-
-// RSPI2 SPRI2
-#pragma interrupt (Excep_RSPI2_SPRI2(vect=108))
-void INT_Excep_RSPI2_SPRI2(void) __attribute__ ((interrupt));
-
-// RSPI2 SPTI2
-#pragma interrupt (Excep_RSPI2_SPTI2(vect=109))
-void INT_Excep_RSPI2_SPTI2(void) __attribute__ ((interrupt));
-
-// ICU GROUPBL0
-#pragma interrupt (Excep_ICU_GROUPBL0(vect=110))
-void INT_Excep_ICU_GROUPBL0(void) __attribute__ ((interrupt));
-
-// ICU GROUPBL1
-#pragma interrupt (Excep_ICU_GROUPBL1(vect=111))
-void INT_Excep_ICU_GROUPBL1(void) __attribute__ ((interrupt));
-
-// ICU GROUPAL0
-#pragma interrupt (Excep_ICU_GROUPAL0(vect=112))
-void INT_Excep_ICU_GROUPAL0(void) __attribute__ ((interrupt));
-
-// ICU GROUPAL1
-#pragma interrupt (Excep_ICU_GROUPAL1(vect=113))
-void INT_Excep_ICU_GROUPAL1(void) __attribute__ ((interrupt));
-
-// SCI11 RXI11
-#pragma interrupt (Excep_SCI11_RXI11(vect=114))
-void INT_Excep_SCI11_RXI11(void) __attribute__ ((interrupt));
-
-// SCI11 TXI11
-#pragma interrupt (Excep_SCI11_TXI11(vect=115))
-void INT_Excep_SCI11_TXI11(void) __attribute__ ((interrupt));
-
-// SCI12 RXI12
-#pragma interrupt (Excep_SCI12_RXI12(vect=116))
-void INT_Excep_SCI12_RXI12(void) __attribute__ ((interrupt));
-
-// SCI12 TXI12
-#pragma interrupt (Excep_SCI12_TXI12(vect=117))
-void INT_Excep_SCI12_TXI12(void) __attribute__ ((interrupt));
-
-// vector 118 reserved
-// vector 119 reserved
-
-// DMAC DMAC0I
-#pragma interrupt (Excep_DMAC_DMAC0I(vect=120))
-void INT_Excep_DMAC_DMAC0I(void) __attribute__ ((interrupt));
-
-// DMAC DMAC1I
-#pragma interrupt (Excep_DMAC_DMAC1I(vect=121))
-void INT_Excep_DMAC_DMAC1I(void) __attribute__ ((interrupt));
-
-// DMAC DMAC2I
-#pragma interrupt (Excep_DMAC_DMAC2I(vect=122))
-void INT_Excep_DMAC_DMAC2I(void) __attribute__ ((interrupt));
-
-// DMAC DMAC3I
-#pragma interrupt (Excep_DMAC_DMAC3I(vect=123))
-void INT_Excep_DMAC_DMAC3I(void) __attribute__ ((interrupt));
-
-// DMAC DMAC74I
-#pragma interrupt (Excep_DMAC_DMAC74I(vect=124))
-void INT_Excep_DMAC_DMAC74I(void) __attribute__ ((interrupt));
-
-// OST OSTDI
-#pragma interrupt (Excep_OST_OSTDI(vect=125))
-void INT_Excep_OST_OSTDI(void) __attribute__ ((interrupt));
-
-// EXDMAC EXDMAC0I
-#pragma interrupt (Excep_EXDMAC_EXDMAC0I(vect=126))
-void INT_Excep_EXDMAC_EXDMAC0I(void) __attribute__ ((interrupt));
-
-// EXDMAC EXDMAC1I
-#pragma interrupt (Excep_EXDMAC_EXDMAC1I(vect=127))
-void INT_Excep_EXDMAC_EXDMAC1I(void) __attribute__ ((interrupt));
-
-// PERIB INTB128
-#pragma interrupt (Excep_PERIB_INTB128(vect=128))
-void INT_Excep_PERIB_INTB128(void) __attribute__ ((interrupt));
-
-// PERIB INTB129
-#pragma interrupt (Excep_PERIB_INTB129(vect=129))
-void INT_Excep_PERIB_INTB129(void) __attribute__ ((interrupt));
-
-// PERIB INTB130
-#pragma interrupt (Excep_PERIB_INTB130(vect=130))
-void INT_Excep_PERIB_INTB130(void) __attribute__ ((interrupt));
-
-// PERIB INTB131
-#pragma interrupt (Excep_PERIB_INTB131(vect=131))
-void INT_Excep_PERIB_INTB131(void) __attribute__ ((interrupt));
-
-// PERIB INTB132
-#pragma interrupt (Excep_PERIB_INTB132(vect=132))
-void INT_Excep_PERIB_INTB132(void) __attribute__ ((interrupt));
-
-// PERIB INTB133
-#pragma interrupt (Excep_PERIB_INTB133(vect=133))
-void INT_Excep_PERIB_INTB133(void) __attribute__ ((interrupt));
-
-// PERIB INTB134
-#pragma interrupt (Excep_PERIB_INTB134(vect=134))
-void INT_Excep_PERIB_INTB134(void) __attribute__ ((interrupt));
-
-// PERIB INTB135
-#pragma interrupt (Excep_PERIB_INTB135(vect=135))
-void INT_Excep_PERIB_INTB135(void) __attribute__ ((interrupt));
-
-// PERIB INTB136
-#pragma interrupt (Excep_PERIB_INTB136(vect=136))
-void INT_Excep_PERIB_INTB136(void) __attribute__ ((interrupt));
-
-// PERIB INTB137
-#pragma interrupt (Excep_PERIB_INTB137(vect=137))
-void INT_Excep_PERIB_INTB137(void) __attribute__ ((interrupt));
-
-// PERIB INTB138
-#pragma interrupt (Excep_PERIB_INTB138(vect=138))
-void INT_Excep_PERIB_INTB138(void) __attribute__ ((interrupt));
-
-// PERIB INTB139
-#pragma interrupt (Excep_PERIB_INTB139(vect=139))
-void INT_Excep_PERIB_INTB139(void) __attribute__ ((interrupt));
-
-// PERIB INTB140
-#pragma interrupt (Excep_PERIB_INTB140(vect=140))
-void INT_Excep_PERIB_INTB140(void) __attribute__ ((interrupt));
-
-// PERIB INTB141
-#pragma interrupt (Excep_PERIB_INTB141(vect=141))
-void INT_Excep_PERIB_INTB141(void) __attribute__ ((interrupt));
-
-// PERIB INTB142
-#pragma interrupt (Excep_PERIB_INTB142(vect=142))
-void INT_Excep_PERIB_INTB142(void) __attribute__ ((interrupt));
-
-// PERIB INTB143
-#pragma interrupt (Excep_PERIB_INTB143(vect=143))
-void INT_Excep_PERIB_INTB143(void) __attribute__ ((interrupt));
-
-// PERIB INTB144
-#pragma interrupt (Excep_PERIB_INTB144(vect=144))
-void INT_Excep_PERIB_INTB144(void) __attribute__ ((interrupt));
-
-// PERIB INTB145
-#pragma interrupt (Excep_PERIB_INTB145(vect=145))
-void INT_Excep_PERIB_INTB145(void) __attribute__ ((interrupt));
-
-// PERIB INTB146
-#pragma interrupt (Excep_PERIB_INTB146(vect=146))
-void INT_Excep_PERIB_INTB146(void) __attribute__ ((interrupt));
-
-// PERIB INTB147
-#pragma interrupt (Excep_PERIB_INTB147(vect=147))
-void INT_Excep_PERIB_INTB147(void) __attribute__ ((interrupt));
-
-// PERIB INTB148
-#pragma interrupt (Excep_PERIB_INTB148(vect=148))
-void INT_Excep_PERIB_INTB148(void) __attribute__ ((interrupt));
-
-// PERIB INTB149
-#pragma interrupt (Excep_PERIB_INTB149(vect=149))
-void INT_Excep_PERIB_INTB149(void) __attribute__ ((interrupt));
-
-// PERIB INTB150
-#pragma interrupt (Excep_PERIB_INTB150(vect=150))
-void INT_Excep_PERIB_INTB150(void) __attribute__ ((interrupt));
-
-// PERIB INTB151
-#pragma interrupt (Excep_PERIB_INTB151(vect=151))
-void INT_Excep_PERIB_INTB151(void) __attribute__ ((interrupt));
-
-// PERIB INTB152
-#pragma interrupt (Excep_PERIB_INTB152(vect=152))
-void INT_Excep_PERIB_INTB152(void) __attribute__ ((interrupt));
-
-// PERIB INTB153
-#pragma interrupt (Excep_PERIB_INTB153(vect=153))
-void INT_Excep_PERIB_INTB153(void) __attribute__ ((interrupt));
-
-// PERIB INTB154
-#pragma interrupt (Excep_PERIB_INTB154(vect=154))
-void INT_Excep_PERIB_INTB154(void) __attribute__ ((interrupt));
-
-// PERIB INTB155
-#pragma interrupt (Excep_PERIB_INTB155(vect=155))
-void INT_Excep_PERIB_INTB155(void) __attribute__ ((interrupt));
-
-// PERIB INTB156
-#pragma interrupt (Excep_PERIB_INTB156(vect=156))
-void INT_Excep_PERIB_INTB156(void) __attribute__ ((interrupt));
-
-// PERIB INTB157
-#pragma interrupt (Excep_PERIB_INTB157(vect=157))
-void INT_Excep_PERIB_INTB157(void) __attribute__ ((interrupt));
-
-// PERIB INTB158
-#pragma interrupt (Excep_PERIB_INTB158(vect=158))
-void INT_Excep_PERIB_INTB158(void) __attribute__ ((interrupt));
-
-// PERIB INTB159
-#pragma interrupt (Excep_PERIB_INTB159(vect=159))
-void INT_Excep_PERIB_INTB159(void) __attribute__ ((interrupt));
-
-// PERIB INTB160
-#pragma interrupt (Excep_PERIB_INTB160(vect=160))
-void INT_Excep_PERIB_INTB160(void) __attribute__ ((interrupt));
-
-// PERIB INTB161
-#pragma interrupt (Excep_PERIB_INTB161(vect=161))
-void INT_Excep_PERIB_INTB161(void) __attribute__ ((interrupt));
-
-// PERIB INTB162
-#pragma interrupt (Excep_PERIB_INTB162(vect=162))
-void INT_Excep_PERIB_INTB162(void) __attribute__ ((interrupt));
-
-// PERIB INTB163
-#pragma interrupt (Excep_PERIB_INTB163(vect=163))
-void INT_Excep_PERIB_INTB163(void) __attribute__ ((interrupt));
-
-// PERIB INTB164
-#pragma interrupt (Excep_PERIB_INTB164(vect=164))
-void INT_Excep_PERIB_INTB164(void) __attribute__ ((interrupt));
-
-// PERIB INTB165
-#pragma interrupt (Excep_PERIB_INTB165(vect=165))
-void INT_Excep_PERIB_INTB165(void) __attribute__ ((interrupt));
-
-// PERIB INTB166
-#pragma interrupt (Excep_PERIB_INTB166(vect=166))
-void INT_Excep_PERIB_INTB166(void) __attribute__ ((interrupt));
-
-// PERIB INTB167
-#pragma interrupt (Excep_PERIB_INTB167(vect=167))
-void INT_Excep_PERIB_INTB167(void) __attribute__ ((interrupt));
-
-// PERIB INTB168
-#pragma interrupt (Excep_PERIB_INTB168(vect=168))
-void INT_Excep_PERIB_INTB168(void) __attribute__ ((interrupt));
-
-// PERIB INTB169
-#pragma interrupt (Excep_PERIB_INTB169(vect=169))
-void INT_Excep_PERIB_INTB169(void) __attribute__ ((interrupt));
-
-// PERIB INTB170
-#pragma interrupt (Excep_PERIB_INTB170(vect=170))
-void INT_Excep_PERIB_INTB170(void) __attribute__ ((interrupt));
-
-// PERIB INTB171
-#pragma interrupt (Excep_PERIB_INTB171(vect=171))
-void INT_Excep_PERIB_INTB171(void) __attribute__ ((interrupt));
-
-// PERIB INTB172
-#pragma interrupt (Excep_PERIB_INTB172(vect=172))
-void INT_Excep_PERIB_INTB172(void) __attribute__ ((interrupt));
-
-// PERIB INTB173
-#pragma interrupt (Excep_PERIB_INTB173(vect=173))
-void INT_Excep_PERIB_INTB173(void) __attribute__ ((interrupt));
-
-// PERIB INTB174
-#pragma interrupt (Excep_PERIB_INTB174(vect=174))
-void INT_Excep_PERIB_INTB174(void) __attribute__ ((interrupt));
-
-// PERIB INTB175
-#pragma interrupt (Excep_PERIB_INTB175(vect=175))
-void INT_Excep_PERIB_INTB175(void) __attribute__ ((interrupt));
-
-// PERIB INTB176
-#pragma interrupt (Excep_PERIB_INTB176(vect=176))
-void INT_Excep_PERIB_INTB176(void) __attribute__ ((interrupt));
-
-// PERIB INTB177
-#pragma interrupt (Excep_PERIB_INTB177(vect=177))
-void INT_Excep_PERIB_INTB177(void) __attribute__ ((interrupt));
-
-// PERIB INTB178
-#pragma interrupt (Excep_PERIB_INTB178(vect=178))
-void INT_Excep_PERIB_INTB178(void) __attribute__ ((interrupt));
-
-// PERIB INTB179
-#pragma interrupt (Excep_PERIB_INTB179(vect=179))
-void INT_Excep_PERIB_INTB179(void) __attribute__ ((interrupt));
-
-// PERIB INTB180
-#pragma interrupt (Excep_PERIB_INTB180(vect=180))
-void INT_Excep_PERIB_INTB180(void) __attribute__ ((interrupt));
-
-// PERIB INTB181
-#pragma interrupt (Excep_PERIB_INTB181(vect=181))
-void INT_Excep_PERIB_INTB181(void) __attribute__ ((interrupt));
-
-// PERIB INTB182
-#pragma interrupt (Excep_PERIB_INTB182(vect=182))
-void INT_Excep_PERIB_INTB182(void) __attribute__ ((interrupt));
-
-// PERIB INTB183
-#pragma interrupt (Excep_PERIB_INTB183(vect=183))
-void INT_Excep_PERIB_INTB183(void) __attribute__ ((interrupt));
-
-// PERIB INTB184
-#pragma interrupt (Excep_PERIB_INTB184(vect=184))
-void INT_Excep_PERIB_INTB184(void) __attribute__ ((interrupt));
-
-// PERIB INTB185
-#pragma interrupt (Excep_PERIB_INTB185(vect=185))
-void INT_Excep_PERIB_INTB185(void) __attribute__ ((interrupt));
-
-// PERIB INTB186
-#pragma interrupt (Excep_PERIB_INTB186(vect=186))
-void INT_Excep_PERIB_INTB186(void) __attribute__ ((interrupt));
-
-// PERIB INTB187
-#pragma interrupt (Excep_PERIB_INTB187(vect=187))
-void INT_Excep_PERIB_INTB187(void) __attribute__ ((interrupt));
-
-// PERIB INTB188
-#pragma interrupt (Excep_PERIB_INTB188(vect=188))
-void INT_Excep_PERIB_INTB188(void) __attribute__ ((interrupt));
-
-// PERIB INTB189
-#pragma interrupt (Excep_PERIB_INTB189(vect=189))
-void INT_Excep_PERIB_INTB189(void) __attribute__ ((interrupt));
-
-// PERIB INTB190
-#pragma interrupt (Excep_PERIB_INTB190(vect=190))
-void INT_Excep_PERIB_INTB190(void) __attribute__ ((interrupt));
-
-// PERIB INTB191
-#pragma interrupt (Excep_PERIB_INTB191(vect=191))
-void INT_Excep_PERIB_INTB191(void) __attribute__ ((interrupt));
-
-// PERIB INTB192
-#pragma interrupt (Excep_PERIB_INTB192(vect=192))
-void INT_Excep_PERIB_INTB192(void) __attribute__ ((interrupt));
-
-// PERIB INTB193
-#pragma interrupt (Excep_PERIB_INTB193(vect=193))
-void INT_Excep_PERIB_INTB193(void) __attribute__ ((interrupt));
-
-// PERIB INTB194
-#pragma interrupt (Excep_PERIB_INTB194(vect=194))
-void INT_Excep_PERIB_INTB194(void) __attribute__ ((interrupt));
-
-// PERIB INTB195
-#pragma interrupt (Excep_PERIB_INTB195(vect=195))
-void INT_Excep_PERIB_INTB195(void) __attribute__ ((interrupt));
-
-// PERIB INTB196
-#pragma interrupt (Excep_PERIB_INTB196(vect=196))
-void INT_Excep_PERIB_INTB196(void) __attribute__ ((interrupt));
-
-// PERIB INTB197
-#pragma interrupt (Excep_PERIB_INTB197(vect=197))
-void INT_Excep_PERIB_INTB197(void) __attribute__ ((interrupt));
-
-// PERIB INTB198
-#pragma interrupt (Excep_PERIB_INTB198(vect=198))
-void INT_Excep_PERIB_INTB198(void) __attribute__ ((interrupt));
-
-// PERIB INTB199
-#pragma interrupt (Excep_PERIB_INTB199(vect=199))
-void INT_Excep_PERIB_INTB199(void) __attribute__ ((interrupt));
-
-// PERIB INTB200
-#pragma interrupt (Excep_PERIB_INTB200(vect=200))
-void INT_Excep_PERIB_INTB200(void) __attribute__ ((interrupt));
-
-// PERIB INTB201
-#pragma interrupt (Excep_PERIB_INTB201(vect=201))
-void INT_Excep_PERIB_INTB201(void) __attribute__ ((interrupt));
-
-// PERIB INTB202
-#pragma interrupt (Excep_PERIB_INTB202(vect=202))
-void INT_Excep_PERIB_INTB202(void) __attribute__ ((interrupt));
-
-// PERIB INTB203
-#pragma interrupt (Excep_PERIB_INTB203(vect=203))
-void INT_Excep_PERIB_INTB203(void) __attribute__ ((interrupt));
-
-// PERIB INTB204
-#pragma interrupt (Excep_PERIB_INTB204(vect=204))
-void INT_Excep_PERIB_INTB204(void) __attribute__ ((interrupt));
-
-// PERIB INTB205
-#pragma interrupt (Excep_PERIB_INTB205(vect=205))
-void INT_Excep_PERIB_INTB205(void) __attribute__ ((interrupt));
-
-// PERIB INTB206
-#pragma interrupt (Excep_PERIB_INTB206(vect=206))
-void INT_Excep_PERIB_INTB206(void) __attribute__ ((interrupt));
-
-// PERIB INTB207
-#pragma interrupt (Excep_PERIB_INTB207(vect=207))
-void INT_Excep_PERIB_INTB207(void) __attribute__ ((interrupt));
-
-// PERIA INTA208
-#pragma interrupt (Excep_PERIA_INTA208(vect=208))
-void INT_Excep_PERIA_INTA208(void) __attribute__ ((interrupt));
-
-// PERIA INTA209
-#pragma interrupt (Excep_PERIA_INTA209(vect=209))
-void INT_Excep_PERIA_INTA209(void) __attribute__ ((interrupt));
-
-// PERIA INTA210
-#pragma interrupt (Excep_PERIA_INTA210(vect=210))
-void INT_Excep_PERIA_INTA210(void) __attribute__ ((interrupt));
-
-// PERIA INTA211
-#pragma interrupt (Excep_PERIA_INTA211(vect=211))
-void INT_Excep_PERIA_INTA211(void) __attribute__ ((interrupt));
-
-// PERIA INTA212
-#pragma interrupt (Excep_PERIA_INTA212(vect=212))
-void INT_Excep_PERIA_INTA212(void) __attribute__ ((interrupt));
-
-// PERIA INTA213
-#pragma interrupt (Excep_PERIA_INTA213(vect=213))
-void INT_Excep_PERIA_INTA213(void) __attribute__ ((interrupt));
-
-// PERIA INTA214
-#pragma interrupt (Excep_PERIA_INTA214(vect=214))
-void INT_Excep_PERIA_INTA214(void) __attribute__ ((interrupt));
-
-// PERIA INTA215
-#pragma interrupt (Excep_PERIA_INTA215(vect=215))
-void INT_Excep_PERIA_INTA215(void) __attribute__ ((interrupt));
-
-// PERIA INTA216
-#pragma interrupt (Excep_PERIA_INTA216(vect=216))
-void INT_Excep_PERIA_INTA216(void) __attribute__ ((interrupt));
-
-// PERIA INTA217
-#pragma interrupt (Excep_PERIA_INTA217(vect=217))
-void INT_Excep_PERIA_INTA217(void) __attribute__ ((interrupt));
-
-// PERIA INTA218
-#pragma interrupt (Excep_PERIA_INTA218(vect=218))
-void INT_Excep_PERIA_INTA218(void) __attribute__ ((interrupt));
-
-// PERIA INTA219
-#pragma interrupt (Excep_PERIA_INTA219(vect=219))
-void INT_Excep_PERIA_INTA219(void) __attribute__ ((interrupt));
-
-// PERIA INTA220
-#pragma interrupt (Excep_PERIA_INTA220(vect=220))
-void INT_Excep_PERIA_INTA220(void) __attribute__ ((interrupt));
-
-// PERIA INTA221
-#pragma interrupt (Excep_PERIA_INTA221(vect=221))
-void INT_Excep_PERIA_INTA221(void) __attribute__ ((interrupt));
-
-// PERIA INTA222
-#pragma interrupt (Excep_PERIA_INTA222(vect=222))
-void INT_Excep_PERIA_INTA222(void) __attribute__ ((interrupt));
-
-// PERIA INTA223
-#pragma interrupt (Excep_PERIA_INTA223(vect=223))
-void INT_Excep_PERIA_INTA223(void) __attribute__ ((interrupt));
-
-// PERIA INTA224
-#pragma interrupt (Excep_PERIA_INTA224(vect=224))
-void INT_Excep_PERIA_INTA224(void) __attribute__ ((interrupt));
-
-// PERIA INTA225
-#pragma interrupt (Excep_PERIA_INTA225(vect=225))
-void INT_Excep_PERIA_INTA225(void) __attribute__ ((interrupt));
-
-// PERIA INTA226
-#pragma interrupt (Excep_PERIA_INTA226(vect=226))
-void INT_Excep_PERIA_INTA226(void) __attribute__ ((interrupt));
-
-// PERIA INTA227
-#pragma interrupt (Excep_PERIA_INTA227(vect=227))
-void INT_Excep_PERIA_INTA227(void) __attribute__ ((interrupt));
-
-// PERIA INTA228
-#pragma interrupt (Excep_PERIA_INTA228(vect=228))
-void INT_Excep_PERIA_INTA228(void) __attribute__ ((interrupt));
-
-// PERIA INTA229
-#pragma interrupt (Excep_PERIA_INTA229(vect=229))
-void INT_Excep_PERIA_INTA229(void) __attribute__ ((interrupt));
-
-// PERIA INTA230
-#pragma interrupt (Excep_PERIA_INTA230(vect=230))
-void INT_Excep_PERIA_INTA230(void) __attribute__ ((interrupt));
-
-// PERIA INTA231
-#pragma interrupt (Excep_PERIA_INTA231(vect=231))
-void INT_Excep_PERIA_INTA231(void) __attribute__ ((interrupt));
-
-// PERIA INTA232
-#pragma interrupt (Excep_PERIA_INTA232(vect=232))
-void INT_Excep_PERIA_INTA232(void) __attribute__ ((interrupt));
-
-// PERIA INTA233
-#pragma interrupt (Excep_PERIA_INTA233(vect=233))
-void INT_Excep_PERIA_INTA233(void) __attribute__ ((interrupt));
-
-// PERIA INTA234
-#pragma interrupt (Excep_PERIA_INTA234(vect=234))
-void INT_Excep_PERIA_INTA234(void) __attribute__ ((interrupt));
-
-// PERIA INTA235
-#pragma interrupt (Excep_PERIA_INTA235(vect=235))
-void INT_Excep_PERIA_INTA235(void) __attribute__ ((interrupt));
-
-// PERIA INTA236
-#pragma interrupt (Excep_PERIA_INTA236(vect=236))
-void INT_Excep_PERIA_INTA236(void) __attribute__ ((interrupt));
-
-// PERIA INTA237
-#pragma interrupt (Excep_PERIA_INTA237(vect=237))
-void INT_Excep_PERIA_INTA237(void) __attribute__ ((interrupt));
-
-// PERIA INTA238
-#pragma interrupt (Excep_PERIA_INTA238(vect=238))
-void INT_Excep_PERIA_INTA238(void) __attribute__ ((interrupt));
-
-// PERIA INTA239
-#pragma interrupt (Excep_PERIA_INTA239(vect=239))
-void INT_Excep_PERIA_INTA239(void) __attribute__ ((interrupt));
-
-// PERIA INTA240
-#pragma interrupt (Excep_PERIA_INTA240(vect=240))
-void INT_Excep_PERIA_INTA240(void) __attribute__ ((interrupt));
-
-// PERIA INTA241
-#pragma interrupt (Excep_PERIA_INTA241(vect=241))
-void INT_Excep_PERIA_INTA241(void) __attribute__ ((interrupt));
-
-// PERIA INTA242
-#pragma interrupt (Excep_PERIA_INTA242(vect=242))
-void INT_Excep_PERIA_INTA242(void) __attribute__ ((interrupt));
-
-// PERIA INTA243
-#pragma interrupt (Excep_PERIA_INTA243(vect=243))
-void INT_Excep_PERIA_INTA243(void) __attribute__ ((interrupt));
-
-// PERIA INTA244
-#pragma interrupt (Excep_PERIA_INTA244(vect=244))
-void INT_Excep_PERIA_INTA244(void) __attribute__ ((interrupt));
-
-// PERIA INTA245
-#pragma interrupt (Excep_PERIA_INTA245(vect=245))
-void INT_Excep_PERIA_INTA245(void) __attribute__ ((interrupt));
-
-// PERIA INTA246
-#pragma interrupt (Excep_PERIA_INTA246(vect=246))
-void INT_Excep_PERIA_INTA246(void) __attribute__ ((interrupt));
-
-// PERIA INTA247
-#pragma interrupt (Excep_PERIA_INTA247(vect=247))
-void INT_Excep_PERIA_INTA247(void) __attribute__ ((interrupt));
-
-// PERIA INTA248
-#pragma interrupt (Excep_PERIA_INTA248(vect=248))
-void INT_Excep_PERIA_INTA248(void) __attribute__ ((interrupt));
-
-// PERIA INTA249
-#pragma interrupt (Excep_PERIA_INTA249(vect=249))
-void INT_Excep_PERIA_INTA249(void) __attribute__ ((interrupt));
-
-// PERIA INTA250
-#pragma interrupt (Excep_PERIA_INTA250(vect=250))
-void INT_Excep_PERIA_INTA250(void) __attribute__ ((interrupt));
-
-// PERIA INTA251
-#pragma interrupt (Excep_PERIA_INTA251(vect=251))
-void INT_Excep_PERIA_INTA251(void) __attribute__ ((interrupt));
-
-// PERIA INTA252
-#pragma interrupt (Excep_PERIA_INTA252(vect=252))
-void INT_Excep_PERIA_INTA252(void) __attribute__ ((interrupt));
-
-// PERIA INTA253
-#pragma interrupt (Excep_PERIA_INTA253(vect=253))
-void INT_Excep_PERIA_INTA253(void) __attribute__ ((interrupt));
-
-// PERIA INTA254
-#pragma interrupt (Excep_PERIA_INTA254(vect=254))
-void INT_Excep_PERIA_INTA254(void) __attribute__ ((interrupt));
-
-// PERIA INTA255
-#pragma interrupt (Excep_PERIA_INTA255(vect=255))
-void INT_Excep_PERIA_INTA255(void) __attribute__ ((interrupt));
-
-//;<<VECTOR DATA START (POWER ON RESET)>>
-//;Power On Reset PC
-extern void PowerON_Reset(void) __attribute__ ((interrupt));                                                                                                                
-//;<<VECTOR DATA END (POWER ON RESET)>>
 
 #endif

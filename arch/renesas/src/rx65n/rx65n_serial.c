@@ -679,7 +679,7 @@ static void up_send(struct uart_dev_s *dev, int ch)
   uint8_t ssr;
 
   /* Write the data to the TDR */
-up_udelay(1000);
+//up_udelay(1000);
   up_serialout(priv, RX_SCI_TDR_OFFSET, (uint8_t)ch);
 
   /* Clear the TDRE bit in the SSR */
@@ -687,7 +687,7 @@ up_udelay(1000);
   ssr  = up_serialin(priv, RX_SCI_SSR_OFFSET);
   ssr &= ~RX_SCISSR_TDRE;
   up_serialout(priv, RX_SCI_SSR_OFFSET, ssr);
-up_udelay(1000);
+//up_udelay(1000);
 }
 
 /****************************************************************************
