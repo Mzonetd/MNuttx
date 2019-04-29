@@ -947,14 +947,12 @@ struct xcptcontext
    * to be processed.
    */
 
-#ifndef CONFIG_DISABLE_SIGNALS
   void *sigdeliver; /* Actual type is sig_deliver_t */
 
   /* These are saved copies of LR and SR used during signal processing. */
 
   uint32_t saved_pc;
   uint32_t saved_sr;
-#endif
 
   /* Register save area */
 
